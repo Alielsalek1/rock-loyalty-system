@@ -1,0 +1,58 @@
+@if ( loading ) {
+<app-alert [message]="loadingMessage"></app-alert>
+}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12 h-100">
+      <div class="voucher-page">
+        @if ( vouchers?.length > 0 ) {
+        <div class="row row-cols-1 row-cols-md-3 g-4 w-100 py-4">
+          <div *ngFor="let voucher of vouchers; let i = index" class="col">
+            <article
+              class="gift-card"
+              [ngClass]="{ 'gift-card--claimed': voucher.isUsed }"
+            >
+              <div class="gift-card__image">
+                <!-- Optionally, include an image tag here if applicable -->
+              </div>
+              <section class="gift-card__content">
+                <div class="gift-card__amount">${{ voucher.value }}</div>
+
+                <div class="gift-card__code">
+                  {{ voucher.shortCode | uppercase }}
+                </div>
+                <div class="gift-card__msg">
+                  {{ voucher.DateOfCreation | date }}
+                </div>
+              </section>
+            </article>
+          </div>
+        </div>
+        } @else {
+        <div
+          class="d-flex justify-content-between align-items-center"
+          style="height: calc(100vh - 71px)"
+        >
+          <div class="no-vouchers">
+            <p>No vouchers to show</p>
+          </div>
+        </div>
+        } @if ( totalItems > 10 ) {
+        <pagination
+          [totalItems]="totalItems"
+          [maxSize]="5"
+          [boundaryLinks]="true"
+          [itemsPerPage]="itemsPerPage"
+          previousText="&lsaquo;"
+          nextText="&rsaquo;"
+          firstText="&laquo;"
+          lastText="&raquo;"
+          class="paginator"
+          (pageChanged)="pageChanged($event)"
+        ></pagination>
+        }
+      </div>
+    </div>
+  </div>
+</div>

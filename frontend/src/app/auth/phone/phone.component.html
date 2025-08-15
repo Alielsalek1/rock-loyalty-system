@@ -1,0 +1,58 @@
+<div class="container">
+  <div class="row vh-100 align-items-center">
+    <form
+      ngForm
+      #loginForm="ngForm"
+      class="col-lg-6 col-md-8 col-sm-10 col-12 offset-sm-1 offset-md-2 offset-lg-3"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="mb-3">
+        <label for="exampleInputEmail1" class="form-label"
+          >enter your phone number :
+        </label>
+        <input
+          type="text"
+          class="form-control"
+          name="phone"
+          id="emailInput"
+          #phoneInput="ngModel"
+          ngModel
+          required
+          aria-describedby="emailHelpId"
+          placeholder="Enter your phone number"
+          [pattern]="'^(010|011|012|015)\\d{8}'"
+          maxlength="11"
+          [ngClass]="{
+            'is-invalid': !phoneInput.valid && phoneInput.touched
+          }"
+        />
+        <div
+          *ngIf="phoneInput.invalid && phoneInput.touched"
+          class="invalid-feedback"
+        >
+          @if (phoneInput.errors?.required) {
+          <div>required</div>
+          } @if (phoneInput.errors?.pattern) {
+          <div>enter a valid phone number</div>
+          }
+        </div>
+      </div>
+
+      <button class="btn btn-primary w-100 mb-1" [disabled]="!loginForm.valid">
+        submit
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- <ng-template #template></ng-template>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left">Modal</h4>
+    <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="modalRef?.hide()">
+      <span aria-hidden="true" class="visually-hidden">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    This is a modal.
+  </div>
+</ng-template> -->

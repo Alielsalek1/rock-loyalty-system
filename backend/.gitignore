@@ -1,0 +1,8 @@
+*.generated.sln
+Migrations
+*.db
+*.db-wal
+*db-shm
+.vscode
+config.json
+*.sql

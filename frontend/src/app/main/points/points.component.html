@@ -1,0 +1,74 @@
+@if ( loading ) {
+<app-alert [message]="loadingMessage"></app-alert>
+}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12 h-100">
+      <div class="voucher-page">
+        @if ( points?.length > 0 ) {
+        <div class="row row-cols-1 row-cols-md-3 g-4 w-100 py-4">
+          <div *ngFor="let point of points; let i = index" class="col">
+            <div class="card">
+              <div class="card-header bg-primary text-white">
+                Receipt ID: {{ point.receiptId }}
+              </div>
+              <div class="card-body">
+                <p class="card-text">
+                  <strong>Restaurant ID: {{ point.restaurantId }}</strong>
+                </p>
+                <p class="card-text">
+                  <strong>Customer ID: {{ point.customerId }}</strong>
+                </p>
+                <p class="card-text">
+                  <strong>Transaction Value:</strong>
+                  ${{ point.transactionValue }}
+                </p>
+                <p class="card-text">
+                  <strong>Is Expired:</strong>
+                  <span
+                    [ngClass]="{
+                      'text-danger fw-bold': point.isExpired,
+                      'text-success': !point.isExpired
+                    }"
+                  >
+                    {{ point.isExpired ? "Expired" : "Valid" }}
+                  </span>
+                </p>
+                <p class="card-text">
+                  <strong>Points Earned:</strong> {{ point.points }}
+                </p>
+              </div>
+              <div class="card-footer text-muted">
+                {{ point.transactionDate | date }}
+              </div>
+            </div>
+          </div>
+        </div>
+        } @else {
+        <div
+          class="d-flex justify-content-between align-items-center"
+          style="height: calc(100vh - 71px)"
+        >
+          <div class="no-vouchers">
+            <p>No points to show</p>
+          </div>
+        </div>
+        } @if ( totalItems > 10 ) {
+        <pagination
+          [totalItems]="totalItems"
+          [maxSize]="5"
+          [boundaryLinks]="true"
+          [itemsPerPage]="itemsPerPage"
+          previousText="&lsaquo;"
+          nextText="&rsaquo;"
+          firstText="&laquo;"
+          lastText="&raquo;"
+          class="paginator"
+          (pageChanged)="pageChanged($event)"
+        ></pagination>
+        }
+      </div>
+    </div>
+  </div>
+</div>

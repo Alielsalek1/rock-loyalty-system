@@ -1,0 +1,11 @@
+.overlay {
+  padding-left: 64px;
+  padding-bottom: 0px;
+}
+
+@media screen and (max-width: 768px) {
+  .overlay {
+    padding-left: 0px;
+    padding-bottom: 71px;
+  }
+}

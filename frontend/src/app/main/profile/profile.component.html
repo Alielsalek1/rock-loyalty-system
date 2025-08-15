@@ -1,0 +1,52 @@
+<div class="container">
+  <div
+    class="row mx-2 flex-column gap-4 main-page align-items-center justify-content-center"
+  >
+    <div class="col-lg-5 col-md-6 col-12 partition-shadow rounded-4 p-4">
+      <form ngForm #myForm="ngForm" (ngSubmit)="onSubmit()">
+        <h4 class="text-center">
+          <span style="font-weight: 300">Update</span> Info
+        </h4>
+        <div class="mb-3">
+          <label for="" class="form-label">Name</label>
+          <input
+            type="text"
+            class="form-control"
+            name="name"
+            id=""
+            aria-describedby="helpId"
+            placeholder="jhone doe"
+            [(ngModel)]="name"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="" class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            name="email"
+            id=""
+            aria-describedby="emailHelpId"
+            placeholder="abc@mail.com"
+            [(ngModel)]="email"
+          />
+        </div>
+        <div class="mb-3">
+          <label for="" class="form-label">Phone number</label>
+          <input
+            type="text"
+            class="form-control"
+            name="phoneNumber"
+            id=""
+            aria-describedby="emailHelpId"
+            placeholder="Phone number"
+            [(ngModel)]="phoneNumber"
+          />
+        </div>
+        <button class="btn-primary btn w-100 mb-1">Submit</button>
+      </form>
+      <hr />
+      <button class="btn btn-danger w-100" (click)="onLogOut()">Log Out</button>
+    </div>
+  </div>
+</div>

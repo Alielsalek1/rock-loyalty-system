@@ -1,0 +1,183 @@
+@if ( loading ) {
+<app-alert [message]="loadingMessage"></app-alert>
+}
+
+<div class="container">
+  <div class="row vh-100 align-items-center">
+    <form
+      ngForm
+      #registerForm="ngForm"
+      class="col-lg-6 col-md-8 col-sm-10 col-12 offset-sm-1 offset-md-2 offset-lg-3"
+      (ngSubmit)="onSubmit()"
+    >
+      <h1 class="text-center mb-3" style="font-weight: 800">Register</h1>
+
+      <div class="mb-3">
+        <input
+          type="email"
+          class="form-control"
+          name="name"
+          ngModel
+          #nameInput="ngModel"
+          aria-describedby="emailHelpId"
+          placeholder="Enter your name"
+        />
+      </div>
+
+      <div class="mb-3">
+        <input
+          type="email"
+          class="form-control"
+          name="email"
+          ngModel
+          #emailInput="ngModel"
+          email
+          required
+          aria-describedby="helpId"
+          placeholder="Enter your email"
+          [ngClass]="{ 'is-invalid': !emailInput.valid && emailInput.touched }"
+        />
+        <div
+          *ngIf="emailInput.invalid && emailInput.touched"
+          class="invalid-feedback"
+        >
+          @if (emailInput.errors?.required) {
+          <div>Email is required</div>
+          } @if (emailInput.errors?.email) {
+          <div>Please enter a valid email address</div>
+          }
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <input
+          type="text"
+          class="form-control"
+          #phoneNumberInput="ngModel"
+          ngModel
+          placeholder="Enter your phone number"
+          name="phoneNumber"
+          required
+          pattern="^[0-9]{10,15}$"
+          [ngClass]="{
+            'is-invalid': !phoneNumberInput.valid && phoneNumberInput.touched
+          }"
+        />
+        <div *ngIf="phoneNumberInput.errors?.required" class="invalid-feedback">
+          Phone number is required
+        </div>
+        <div *ngIf="phoneNumberInput.errors?.pattern" class="invalid-feedback">
+          Please enter a valid phone number
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <input
+          type="password"
+          class="form-control"
+          #passwordInput="ngModel"
+          ngModel
+          placeholder="Enter your password"
+          name="password"
+          required
+          minlength="8"
+          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$"
+          [ngClass]="{
+            'is-invalid': !passwordInput.valid && passwordInput.touched
+          }"
+        />
+        <div
+          *ngIf="confirmPasswordInput.errors?.required"
+          class="invalid-feedback"
+        >
+          password is required
+        </div>
+        <ul
+          *ngIf="passwordInput.invalid && passwordInput.touched"
+          class="invalid-feedback"
+        >
+          <li *ngIf="passwordInput.errors?.minlength">
+            Password must be at least 8 characters long.
+          </li>
+          <li *ngIf="passwordInput.errors?.pattern">
+            Password must contain at least one uppercase letter, one lowercase
+            letter, one digit, and one special character.
+          </li>
+        </ul>
+      </div>
+
+      <div class="mb-3">
+        <input
+          type="password"
+          class="form-control"
+          #confirmPasswordInput="ngModel"
+          ngModel
+          placeholder="Confirm your password"
+          name="confirmPassword"
+          required
+          [ngClass]="{
+            'is-invalid':
+              (!confirmPasswordInput.valid && confirmPasswordInput.touched) ||
+              (confirmPasswordInput.touched &&
+                passwordInput.value !== confirmPasswordInput.value)
+          }"
+        />
+        <div
+          *ngIf="
+            confirmPasswordInput.touched &&
+            passwordInput.value !== confirmPasswordInput.value
+          "
+          class="invalid-feedback"
+        >
+          Passwords do not match.
+        </div>
+
+        <div
+          *ngIf="confirmPasswordInput.errors?.required"
+          class="invalid-feedback"
+        >
+          confirm password is required
+        </div>
+      </div>
+
+      <button
+        class="btn btn-primary w-100 mb-1"
+        [disabled]="
+          !registerForm.valid ||
+          passwordInput.value != confirmPasswordInput.value
+        "
+      >
+        submit
+      </button>
+      <div class="d-flex flex-column align-items-end justify-content-end">
+        <a
+          class="icon-link icon-link-hover"
+          [routerLink]="['/' + restuarantId, 'auth', 'login']"
+        >
+          alreay registered ?
+        </a>
+      </div>
+      <div class="or-divider">
+        <hr class="line" />
+        <span class="or-text">or</span>
+        <hr class="line" />
+      </div>
+      <div class="d-flex gap-2">
+        <a
+          class="btn btn-primary w-100"
+          style="height: 40px"
+          (click)="onFacebokLogin()"
+        >
+          <i class="bi bi-facebook"></i> Facebook
+        </a>
+        <a
+          class="btn btn-danger w-100"
+          style="height: 40px"
+          (click)="onGoogleLogin()"
+        >
+          <i class="bi bi-google"></i> Google
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

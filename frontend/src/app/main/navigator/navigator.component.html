@@ -1,0 +1,55 @@
+<!-- Sidebar for Desktop -->
+<nav
+  class="sidebar navbar-light bg-dark d-none d-md-flex flex-column fixed-start"
+>
+  <div class="container-fluid flex-column align-items-start pt-3">
+    <a
+      class="nav-link"
+      [routerLink]="['/' + restaurantId, 'main']"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      <i class="bi bi-currency-exchange"></i>
+      <span>Exchange</span>
+    </a>
+    <a class="nav-link" [routerLink]="['vouchers']" routerLinkActive="active">
+      <i class="bi bi-ticket-perforated-fill"></i>
+      <span>Vouchers</span>
+    </a>
+    <a class="nav-link" [routerLink]="['points']" routerLinkActive="active">
+      <i class="bi bi-cash-stack"></i>
+      <span>Points</span>
+    </a>
+    <a class="nav-link" [routerLink]="['profile']" routerLinkActive="active">
+      <i class="bi bi-person-circle"></i>
+      <span>Profile</span>
+    </a>
+  </div>
+</nav>
+
+<!-- Bottom Navigation Bar for Mobile -->
+<nav class="bottom-navbar navbar fixed-bottom navbar-light bg-dark d-md-none">
+  <div class="container-fluid justify-content-evenly">
+    <a
+      class="nav-link"
+      [routerLink]="['/' + restaurantId, 'main']"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      <i class="bi bi-currency-exchange"></i>
+      <span>Exchange</span>
+    </a>
+    <a class="nav-link" [routerLink]="['vouchers']" routerLinkActive="active">
+      <i class="bi bi-ticket-perforated-fill"></i>
+      <span>Vouchers</span>
+    </a>
+    <a class="nav-link" [routerLink]="['points']" routerLinkActive="active">
+      <i class="bi bi-cash-stack"></i>
+      <span>Points</span>
+    </a>
+    <a class="nav-link" [routerLink]="['profile']" routerLinkActive="active">
+      <i class="bi bi-person-circle"></i>
+      <span>Profile</span>
+    </a>
+  </div>
+</nav>

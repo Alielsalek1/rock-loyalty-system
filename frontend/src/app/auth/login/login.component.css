@@ -1,0 +1,17 @@
+.or-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.line {
+  flex: 1;
+  border: none;
+  height: 1px;
+  background-color: #ddd; /* Light grey line color */
+}
+
+.or-text {
+  padding: 0 15px;
+  color: #666; /* Grey text color */
+}

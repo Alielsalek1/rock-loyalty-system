@@ -1,0 +1,64 @@
+/* Sidebar (Desktop) */
+.sidebar {
+  background-color: #ffffff;
+  width: 65px;
+  height: 100vh;
+  border-right: 1px solid #e7e7e7;
+  padding-top: 1rem;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+
+  .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #6c757d;
+    padding: 1rem 0;
+    width: 100%;
+
+    span {
+      font-size: 0.75rem;
+    }
+
+    i {
+      font-size: 1.5rem;
+    }
+
+    &.active {
+      color: #007bff;
+    }
+  }
+}
+
+/* Bottom Navigation (Mobile) */
+.bottom-navbar {
+  background-color: #ffffff;
+  border-top: 1px solid #e7e7e7;
+  z-index: 999;
+  margin-bottom: -1px;
+
+  .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #6c757d;
+
+    i {
+      font-size: 1.5rem;
+    }
+
+    span {
+      font-size: 0.75rem;
+    }
+
+    &.active {
+      color: #007bff;
+    }
+
+    &:hover {
+      color: #007bff;
+    }
+  }
+}

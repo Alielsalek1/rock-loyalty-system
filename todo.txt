@@ -1,0 +1,15 @@
+input validation
+focus on EmailService
+run tany el apiKey validator
+return all [authorize Roles("admin")] --> as they are all removed
+some endpoints are prefixed admin/ and other are not (Admin only endpoints)
+test emails sending (check the Frontend part as emails get redirected to frontend)
+
+REFRESH TOKEN
+you should add a refreshToken when you create a user not when logging in (fix for confirmEmail and login)
+Implement the refreshToken part as it doesn't send anything to the frontend.
+
+Fix the Socket exhaustion
+make input validators for all endpoints DTOs
+receiptId must be unique when creating a transaction
+Adjust the date for the Spend (Voucher) to match to format for the Earn (points)

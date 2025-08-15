@@ -68,6 +68,7 @@ namespace LoyaltyApi.Services
                 Role = Role.User
 
             };
+            
             Token accessToken = new()
             {
                 CustomerId = customerId,

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Sprache;
 
 namespace LoyaltyApi.Controllers;
@@ -81,7 +82,7 @@ public class UsersController(
             return BadRequest(new { success = false, message = "Password is required" });
 
         if (existingUser is not null)
-            return BadRequest(new { success = false, message = "User already exists" });
+                return BadRequest(new { success = false, message = "User already exists" });
 
         User? user = await userService.CreateUserAsync(requestBody);
 

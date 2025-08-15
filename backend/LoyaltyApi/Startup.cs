@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using AspNetCoreRateLimit;
+using FluentValidation;
 using LoyaltyApi.Config;
 using LoyaltyApi.Data;
 using LoyaltyApi.Middlewares;
@@ -9,6 +10,7 @@ using LoyaltyApi.Models;
 using LoyaltyApi.Repositories;
 using LoyaltyApi.Services;
 using LoyaltyApi.Utilities;
+using LoyaltyApi.Validators;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -45,7 +47,14 @@ namespace LoyaltyApi
             Log.Logger.Information("Configuring configurations done");
 
             Log.Logger.Information("Configuring controllers");
-            services.AddControllers();
+            services.AddControllers(options =>
+            {
+                // Add the ValidateModel action filter globally
+                options.Filters.Add<LoyaltyApi.filters.ValidateModelAttribute>();
+            });
+            
+            // Register FluentValidation
+            services.AddValidatorsFromAssemblyContaining<LoginRequestBodyValidator>();
 
             Log.Logger.Information("Configuring controllers done");
 

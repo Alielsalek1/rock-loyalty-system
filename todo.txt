@@ -1,5 +1,3 @@
-input validation
-focus on EmailService
 run tany el apiKey validator
 return all [authorize Roles("admin")] --> as they are all removed
 some endpoints are prefixed admin/ and other are not (Admin only endpoints)

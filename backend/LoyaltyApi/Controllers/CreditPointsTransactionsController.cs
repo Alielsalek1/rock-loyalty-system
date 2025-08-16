@@ -17,7 +17,9 @@ namespace LoyaltyApi.Controllers;
 public class CreditPointsTransactionController(
     ICreditPointsTransactionService transactionService,
     IRestaurantService restaurantService,
-    ILogger<CreditPointsTransactionController> logger) : ControllerBase
+    ILogger<CreditPointsTransactionController> logger,
+    IUserService userService
+    ) : ControllerBase
 {
     /// <summary>
     /// Retrieves a credit points transaction by its ID.
@@ -199,8 +201,13 @@ public class CreditPointsTransactionController(
         logger.LogInformation("Add transaction request for restaurant {RestaurantId}",
             transactionRequest.RestaurantId);
 
+
+        User? user = await userService.GetUserByIdAsync(transactionRequest.CustomerId, transactionRequest.RestaurantId);
+
+        if (user == null) return NotFound(new { success = false, message = "User not found" });
+
         await transactionService.AddTransactionAsync(transactionRequest);
-        
+
         return StatusCode(StatusCodes.Status201Created,
             new { success = true, message = "Credit points transaction created" });
     }

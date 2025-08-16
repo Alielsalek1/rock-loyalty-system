@@ -14,7 +14,7 @@ namespace LoyaltyApi.Models
 
         public string? ShortCode { get; set; }
         public int? Value { get; set; }
-        public DateTime DateOfCreation { get; set; }
+        public DateTime DateOfCreation { get; set; } = DateTime.Now;
         public bool IsUsed { get; set; }
     }
 }

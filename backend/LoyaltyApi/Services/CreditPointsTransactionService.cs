@@ -130,7 +130,7 @@ public class CreditPointsTransactionService(
             // Retrieve customer transactions and spend the points
             var transactions =
                 await transactionRepository.GetAllTransactionsByCustomerAndRestaurantAsync(customerId, restaurantId);
-                
+
             var remainingPoints = points;
 
             // Check if there are enough points before proceeding
@@ -147,7 +147,7 @@ public class CreditPointsTransactionService(
                 RestaurantId = restaurantId,
                 Points = -points,
                 TransactionType = TransactionType.Spend,
-                TransactionDate = DateTime.UtcNow,
+                TransactionDate = DateTime.Now,
                 TransactionValue = points / restaurant.CreditPointsBuyingRate
             };
 
@@ -157,7 +157,7 @@ public class CreditPointsTransactionService(
             // Distribute the points to spend across available transactions
             foreach (var transaction in transactions
                          .Where(transaction =>
-                            transaction.TransactionDate > DateTime.UtcNow.AddDays(-restaurant.CreditPointsLifeTime) &&
+                            transaction.TransactionDate > DateTime.Now.AddDays(-restaurant.CreditPointsLifeTime) &&
                             transaction.TransactionType == TransactionType.Earn)
                          .OrderBy(t => t.TransactionDate))
             {
@@ -230,7 +230,7 @@ public class CreditPointsTransactionService(
             logger.LogInformation("Fetched {restaurants} restaurants for point expiration", restaurants);
             var restaurantMap = restaurants.ToDictionary(
                 r => r.RestaurantId, restaurant => restaurant);
-            var currentDateTime = DateTime.UtcNow;
+            var currentDateTime = DateTime.Now;
             // Fetch all transactions that have expired based on the restaurant's lifetime
             var expiredTransactions =
                 await transactionRepository.GetExpiredTransactionsAsync(restaurantMap, currentDateTime);

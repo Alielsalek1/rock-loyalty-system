@@ -34,7 +34,7 @@ namespace LoyaltyApi
             services.Configure<Config.GoogleOptions>(configuration.GetSection("GoogleOptions"));
 
             services.Configure<API>(configuration.GetSection("API"));
-            
+
             services.Configure<ApiKey>(configuration.GetSection("ApiKey"));
             services.Configure<EmailOptions>(configuration.GetSection("EmailOptions"));
             services.Configure<AdminOptions>(configuration.GetSection("AdminOptions"));
@@ -44,6 +44,23 @@ namespace LoyaltyApi
             services.AddInMemoryRateLimiting();
             services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 
+            // Add HttpClient factory for better socket management
+            services.AddHttpClient();
+
+            // Configure named HttpClient for API calls with optimized settings
+            services.AddHttpClient("ApiClient", client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.Add("User-Agent", "Rock-Loyalty-System/1.0");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler()
+            {
+                MaxConnectionsPerServer = 100, // Increased for high concurrent usage
+                PooledConnectionLifetime = TimeSpan.FromMinutes(15), // Longer lifetime for efficiency
+                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5), // Close idle connections after 2 minutes
+                ConnectTimeout = TimeSpan.FromSeconds(10) // Fail fast if server is unresponsive
+            });
+
             Log.Logger.Information("Configuring configurations done");
 
             Log.Logger.Information("Configuring controllers");
@@ -52,7 +69,7 @@ namespace LoyaltyApi
                 // Add the ValidateModel action filter globally
                 options.Filters.Add<LoyaltyApi.filters.ValidateModelAttribute>();
             });
-            
+
             // Register FluentValidation
             services.AddValidatorsFromAssemblyContaining<LoginRequestBodyValidator>();
 
@@ -248,10 +265,10 @@ namespace LoyaltyApi
         private static void AddMigrationsAndUpdateDatabase(DbContext dbContext)
         {
             Log.Logger.Information("Adding migrations and updating database");
-            
+
             // Simply apply any pending migrations
             dbContext.Database.Migrate();
-            
+
             Log.Logger.Information("Adding migrations and updating database done");
         }
     }

@@ -81,6 +81,13 @@ public class CreditPointsTransactionService(
         var restaurant = await restaurantRepository.GetRestaurantById(transactionRequest.RestaurantId) ??
                          throw new ArgumentException("Invalid restaurant");
 
+        // Check if receipt already exists
+        var existingTransaction = await transactionRepository.GetTransactionByReceiptIdAsync(transactionRequest.ReceiptId);
+        if (existingTransaction != null)
+        {
+            throw new DuplicateReceiptException($"Receipt ID {transactionRequest.ReceiptId} has already been used for transactionId {existingTransaction.TransactionId} and customerId {existingTransaction.CustomerId}");
+        }
+
         var pointsEarned = creditPointsUtility.CalculateCreditPoints(transactionRequest.Amount,
                 restaurant.CreditPointsBuyingRate);
 

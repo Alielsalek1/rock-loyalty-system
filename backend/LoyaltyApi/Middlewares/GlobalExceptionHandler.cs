@@ -31,7 +31,7 @@ public class GlobalExceptionHandler
     {
         object errorResponse;
         int statusCode;
-        
+
         if (exception is UnauthorizedAccessException)
         {
             errorResponse = new { success = false, message = exception.Message };
@@ -57,6 +57,11 @@ public class GlobalExceptionHandler
             errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status409Conflict;
         }
+        else if (exception is DuplicateReceiptException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status409Conflict;
+        }
         else if (exception is HttpRequestException)
         {
             errorResponse = new { success = false, message = "An error occurred while processing your request. Please try again later." };
@@ -77,7 +82,7 @@ public class GlobalExceptionHandler
             errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status500InternalServerError;
         }
-        
+
         httpContext.Response.StatusCode = statusCode;
         httpContext.Response.ContentType = "application/json";
         await httpContext.Response.WriteAsJsonAsync(errorResponse);

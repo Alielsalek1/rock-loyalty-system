@@ -72,6 +72,11 @@ namespace LoyaltyApi.Data
                 .Property(p => p.TransactionId)
                 .ValueGeneratedOnAdd();
 
+            // Add unique constraint on ReceiptId to prevent duplicate receipt usage
+            modelBuilder.Entity<CreditPointsTransaction>()
+                .HasIndex(p => p.ReceiptId)
+                .IsUnique();
+
             modelBuilder.Entity<CreditPointsTransaction>()
                 .HasOne(p => p.Restaurant)
                 .WithMany()

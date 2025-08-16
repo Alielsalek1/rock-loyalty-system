@@ -92,7 +92,7 @@ namespace LoyaltyApi.Data
 
             modelBuilder.Entity<CreditPointsTransaction>()
                 .Property(p => p.TransactionType)
-                .HasConversion<string>(); // Store enum as string in the database
+                .HasConversion<string>();
 
             modelBuilder.Entity<Password>()
             .HasKey(p => new { p.CustomerId, p.RestaurantId });

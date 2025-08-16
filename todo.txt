@@ -10,3 +10,7 @@ Implement the refreshToken part as it doesn't send anything to the frontend.
 Fix the Socket exhaustion
 receiptId must be unique when creating a transaction
 Adjust the date for the Spend (Voucher) to match to format for the Earn (points)
+update use doesn't follow the uniqueness constraint (doesn't matter because the user is here only for testing)
+FIX Database See, Spend, Expire.
+Fix IsUsed Function kolaha (mdrooba belgzma)
+remove Expired refreshTokens, confirmEmail, ForgetPassword from the database.

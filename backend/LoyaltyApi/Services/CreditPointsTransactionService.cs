@@ -142,6 +142,7 @@ public class CreditPointsTransactionService(
 
             // Check if there are enough points before proceeding
             var totalAvailablePoints = transactions.Sum(t => t.Points);
+            
             if (totalAvailablePoints < points)
             {
                 throw new PointsNotEnoughException("Not enough points");
@@ -212,16 +213,9 @@ public class CreditPointsTransactionService(
                               int.Parse(httpContext.HttpContext?.User?.FindFirst("restaurantId")?.Value ??
                                         throw new ArgumentException("restaurantId not found"));
         logger.LogTrace("restaurantIdJwt: {restaurantIdJwt}", restaurantIdJwt);
-        try
-        {
-            return await transactionRepository.GetCustomerPointsAsync(customerId ?? customerIdJwt,
-                restaurantId ?? restaurantIdJwt);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error retrieving customer points");
-            throw new Exception("Error retrieving customer points", ex);
-        }
+
+        return await transactionRepository.GetCustomerPointsAsync(customerId ?? customerIdJwt,
+            restaurantId ?? restaurantIdJwt);
     }
 
     public async Task<int> ExpirePointsAsync()

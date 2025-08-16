@@ -10,11 +10,12 @@ using Microsoft.IdentityModel.Tokens;
 namespace LoyaltyApi.Utilities
 {
     public class ApiUtility(IOptions<API> apiOptions,
-    ILogger<ApiUtility> logger)
+    ILogger<ApiUtility> logger,
+    IHttpClientFactory httpClientFactory)
     {
         public async Task<string> GetApiKey(string restaurantId)
         {
-            using HttpClient client = new();
+            var client = httpClientFactory.CreateClient("ApiClient");
             var envName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             var isDevelopment = string.Equals(envName, "Development", StringComparison.OrdinalIgnoreCase);
             var isTesting = string.Equals(envName, "Testing", StringComparison.OrdinalIgnoreCase);
@@ -34,14 +35,14 @@ namespace LoyaltyApi.Utilities
             };
             string jsonBody = JsonSerializer.Serialize(body);
             StringContent content = new(jsonBody, Encoding.UTF8, "application/json");
-            var result = await client.PostAsync("http://192.168.1.51:5000/api/CHKUSR", content);
+            var result = await client.PostAsync($"{apiOptions.Value.BaseUrl}/api/CHKUSR", content);
             logger.LogInformation("Request made to get ApiKey. Response Status Code: {statusCode}", result.StatusCode);
             return await result.Content.ReadAsStringAsync();
         }
 
         public async Task<string> GenerateVoucher(Voucher voucher, Restaurant restaurant, string apiKey)
         {
-            using HttpClient client = new();
+            var client = httpClientFactory.CreateClient("ApiClient");
             var body = new
             {
                 DTL = new[]
@@ -71,7 +72,7 @@ namespace LoyaltyApi.Utilities
         }
         public async Task<User?> GetUserAsync(User user, string apiKey)
         {
-            using HttpClient client = new();
+            var client = httpClientFactory.CreateClient("ApiClient");
             client.DefaultRequestHeaders.Add("XApiKey", apiKey);
             string url = $"{apiOptions.Value.BaseUrl}/api/concmd/GETCON/C/{user.PhoneNumber ?? user.Email ?? user.Id.ToString() ?? throw new ArgumentException("Phone number or email is missing")}";
             var result = await client.GetAsync(url);
@@ -97,7 +98,7 @@ namespace LoyaltyApi.Utilities
         }
         public async Task<User?> CreateUserAsync(User user, string apiKey)
         {
-            using HttpClient client = new();
+            var client = httpClientFactory.CreateClient("ApiClient");
             var body = new
             {
                 CCODE = "C", // Constant For Customer
@@ -137,7 +138,7 @@ namespace LoyaltyApi.Utilities
         }
         public async Task<User> UpdateUserAsync(User user, string apiKey)
         {
-            using HttpClient client = new();
+            var client = httpClientFactory.CreateClient("ApiClient");
             var body = new
             {
                 CCODE = "C", // Constant For Customer 

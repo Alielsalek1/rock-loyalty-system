@@ -19,13 +19,6 @@ public class UpdateUserRequestModelValidator : AbstractValidator<UpdateUserReque
                 .EmailAddress().WithMessage("A valid email address is required.");
         });
         
-        // If PhoneNumber is provided, validate it
-        When(x => !string.IsNullOrEmpty(x.PhoneNumber), () => {
-            RuleFor(x => x.PhoneNumber!)
-                .Matches(@"^\+?[1-9]\d{1,14}$")
-                .WithMessage("Phone number must be a valid format.");
-        });
-        
         // If Name is provided, validate it
         When(x => !string.IsNullOrEmpty(x.Name), () => {
             RuleFor(x => x.Name!)

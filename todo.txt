@@ -8,6 +8,5 @@ you should add a refreshToken when you create a user not when logging in (fix fo
 Implement the refreshToken part as it doesn't send anything to the frontend.
 
 Fix the Socket exhaustion
-make input validators for all endpoints DTOs
 receiptId must be unique when creating a transaction
 Adjust the date for the Spend (Voucher) to match to format for the Earn (points)

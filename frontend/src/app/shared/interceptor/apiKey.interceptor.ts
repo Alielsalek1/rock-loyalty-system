@@ -3,7 +3,7 @@ import {
   HttpInterceptorFn,
   HttpRequest,
 } from '@angular/common/http';
-import { enviroment } from '../../../env';
+import { environment } from '../../../env';
 
 export const ApiKeyInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
@@ -11,7 +11,7 @@ export const ApiKeyInterceptor: HttpInterceptorFn = (
 ) => {
   let modifiedReq: HttpRequest<any> = req;
   modifiedReq = req.clone({
-    headers: req.headers.append('X-ApiKey', `${enviroment.apiKey}`),
+    headers: req.headers.append('X-ApiKey', `${environment.apiKey}`),
   });
   return next(modifiedReq);
 };

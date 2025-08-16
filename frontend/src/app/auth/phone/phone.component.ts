@@ -19,9 +19,12 @@ export class PhoneComponent {
     private toastrService: ToastrService
   ) {}
   loading: boolean = false;
+  
   onSubmit() {
     const phone: string = this.form.value.phone;
     const user: User = this.authService.currentUser;
+    console.log('Current user before update:', user);
+    console.log('Phone to be set:', phone);
     user.phonenumber = phone;
     this.loading = true;
     this.authService
@@ -33,14 +36,18 @@ export class PhoneComponent {
       )
       .subscribe({
         next: (response) => {
+          console.log('Update successful:', response);
           this.toastrService.success('redirecting in 5 seconds');
           setTimeout(() => {
             this.router.navigate([this.authService.restaurantId, 'main']);
           }, 5000);
         },
         error: (error) => {
-          this.toastrService.error(error.message);
-        },
+          console.error('Update failed:', error);
+          console.error('Error status:', error.status);
+          console.error('Error message:', error.error);
+          this.toastrService.error('Failed to update phone number');
+        }
       });
   }
 }

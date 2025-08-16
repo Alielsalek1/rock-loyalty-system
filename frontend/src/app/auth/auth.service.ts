@@ -10,7 +10,7 @@ import {
 } from 'rxjs';
 import { User } from '../shared/modules/user.module';
 import { ActivatedRoute, Router } from '@angular/router';
-import { enviroment } from '../../env';
+import { environment } from '../../env';
 import { UserInterface } from '../shared/responseInterface/user.get.response.interface';
 
 @Injectable({
@@ -70,7 +70,7 @@ export class AuthService {
 
   SignUp(name: string, email: string, password: string, phoneNumber: string) {
     console.log(this.restaurantId);
-    return this.http.post(`${enviroment.apiUrl}/api/users`, {
+    return this.http.post(`${environment.apiUrl}/api/users`, {
       email: email,
       password: password,
       restaurantId: this.restaurantId,
@@ -81,7 +81,7 @@ export class AuthService {
 
   logIn(email: string, phoneNumber: string, password: string) {
     return this.http
-      .post<UserInterface>(`${enviroment.apiUrl}/api/auth/login`, {
+      .post<UserInterface>(`${environment.apiUrl}/api/auth/login`, {
         email: email,
         phoneNumber: phoneNumber,
         password: password,
@@ -112,8 +112,16 @@ export class AuthService {
   }
 
   updateUserInfo(newUser: User) {
+    console.log('Updating user with data:', {
+      phoneNumber: newUser.phonenumber,
+      email: newUser.email,
+      name: newUser.name,
+    });
+    console.log('Current user token:', newUser.token ? 'Token exists' : 'No token');
+    console.log('Making request to:', `${environment.apiUrl}/api/users`);
+    
     return this.http
-      .put<UserInterface>(`${enviroment.apiUrl}/api/users`, {
+      .put<UserInterface>(`${environment.apiUrl}/api/users`, {
         phoneNumber: newUser.phonenumber,
         email: newUser.email,
         name: newUser.name,
@@ -144,7 +152,7 @@ export class AuthService {
 
   confirmEmail(token: string) {
     return this.http
-      .put(`${enviroment.apiUrl}/api/auth/confirm-email/${token}`, {})
+      .put(`${environment.apiUrl}/api/auth/confirm-email/${token}`, {})
       .pipe(
         catchError((errorResponse: HttpErrorResponse) => {
           console.log(errorResponse);
@@ -168,7 +176,7 @@ export class AuthService {
 
   UpdatePassword(token: string, password: string) {
     return this.http
-      .put(`${enviroment.apiUrl}/api/password/${token}`, {
+      .put(`${environment.apiUrl}/api/password/${token}`, {
         password: password,
       })
       .pipe(
@@ -189,7 +197,7 @@ export class AuthService {
 
   loginFaceBook(token: string): Observable<UserInterface> {
     return this.http
-      .post<UserInterface>(`${enviroment.apiUrl}/api/oauth2/signin-facebook`, {
+      .post<UserInterface>(`${environment.apiUrl}/api/oauth2/signin-facebook`, {
         accessToken: token,
         restaurantId: this.restaurantId,
       })
@@ -207,7 +215,7 @@ export class AuthService {
 
   forgotPassword(email: string): Observable<any> {
     return this.http
-      .post(`${enviroment.apiUrl}/api/password/forgot-password-email`, {
+      .post(`${environment.apiUrl}/api/password/forgot-password-email`, {
         email: email,
         restaurantId: this.restaurantId,
       })
@@ -232,7 +240,7 @@ export class AuthService {
 
   loginGoogle(token: string): Observable<UserInterface> {
     return this.http
-      .post<UserInterface>(`${enviroment.apiUrl}/api/oauth2/signin-google`, {
+      .post<UserInterface>(`${environment.apiUrl}/api/oauth2/signin-google`, {
         accessToken: token,
         restaurantId: this.restaurantId,
       })

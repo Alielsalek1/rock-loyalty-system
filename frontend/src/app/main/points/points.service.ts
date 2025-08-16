@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AuthService } from '../../auth/auth.service';
 import { BehaviorSubject, tap } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { enviroment } from '../../../env';
+import { environment } from '../../../env';
 import { Points, PointsResponse } from './points.interface';
 
 @Injectable({
@@ -16,7 +16,7 @@ export class PointsService {
   getPointsList(pageNumber: number, pageSize: number) {
     return this.http
       .get<PointsResponse>(
-        `${enviroment.apiUrl}/api/users/${this.authService.currentUser.id}/restaurants/${this.authService.restaurantId}/credit-points-transactions`,
+        `${environment.apiUrl}/api/users/${this.authService.currentUser.id}/restaurants/${this.authService.restaurantId}/credit-points-transactions`,
         {
           params: new HttpParams()
             .set('pageNumber', pageNumber)

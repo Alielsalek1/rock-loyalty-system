@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { enviroment } from '../../../env';
+import { environment } from '../../../env';
 declare var FB;
 @Injectable({
   providedIn: 'root',

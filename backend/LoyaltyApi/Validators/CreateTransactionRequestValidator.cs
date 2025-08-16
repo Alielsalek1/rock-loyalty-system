@@ -18,11 +18,5 @@ public class CreateTransactionRequestValidator : AbstractValidator<CreateTransac
         
         RuleFor(x => x.Amount)
             .GreaterThan(0).WithMessage("Amount must be greater than 0.");
-        
-        // If TransactionDate is provided, validate it's not in the future
-        When(x => x.TransactionDate.HasValue, () => {
-            RuleFor(x => x.TransactionDate!.Value)
-                .LessThanOrEqualTo(DateTime.Now).WithMessage("Transaction date cannot be in the future.");
-        });
     }
 }

@@ -45,6 +45,7 @@ namespace LoyaltyApi.Repositories
         {
             logger.LogInformation("Getting vouchers for customer {CustomerId} and restaurant {RestaurantId}",
                 customerId, restaurantId);
+                
             var query = dbContext.Vouchers
                 .Where(v => v.CustomerId == customerId && v.RestaurantId == restaurantId)
                 .OrderByDescending(v => v.DateOfCreation)

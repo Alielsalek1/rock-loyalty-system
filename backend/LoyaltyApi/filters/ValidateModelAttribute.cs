@@ -33,7 +33,7 @@ public class ValidateModelAttribute : ActionFilterAttribute
                     
                     context.Result = new BadRequestObjectResult(new
                     {
-                        message = errorMessages,
+                        message = string.Join(", ", errorMessages),
                         success = false
                     });
                     return;
@@ -51,7 +51,7 @@ public class ValidateModelAttribute : ActionFilterAttribute
 
             context.Result = new BadRequestObjectResult(new
             {
-                message = errors,
+                message = string.Join(", ", errors),
                 success = false
             });
         }

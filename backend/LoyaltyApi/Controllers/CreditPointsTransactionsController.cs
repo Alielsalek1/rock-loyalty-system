@@ -6,7 +6,6 @@ using LoyaltyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using LoyaltyApi.Exceptions;
 
-
 namespace LoyaltyApi.Controllers;
 
 /// <summary>

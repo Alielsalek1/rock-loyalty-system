@@ -32,17 +32,15 @@ export class ForgetPasswordComponent implements OnInit {
       .UpdatePassword(this.token, this.passwordField.value)
       .pipe(
         finalize(() => {
-          this.loading = false;
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.toastrService.success('redirecting in 5 seconds');
-          setTimeout(() => {
+            this.loading = false;
+          })
+          )
+          .subscribe({
+          next: () => {
+            this.toastrService.success('Password updated successfully');
             this.router.navigate([this.authService.restaurantId, 'main']);
-          }, 5000);
-        },
-        error: (error: Error) => {
+          },
+          error: (error: Error) => {
           this.toastrService.error(error.message);
         },
       });

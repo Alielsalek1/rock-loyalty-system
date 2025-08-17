@@ -113,10 +113,8 @@ export class RegisterComponent implements OnInit {
     });
   }
 
-  private redirect(seconds: number = 5) {
-    this.toastrService.success(`redirecting in ${seconds} seconds`);
-    setTimeout(() => {
-      this.router.navigate(['/main']);
-    }, seconds * 1000);
+  private redirect() {
+    this.toastrService.success(`Login Successful`);
+    this.router.navigate([this.authService.restaurantId, 'main']);
   }
 }

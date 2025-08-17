@@ -2,7 +2,7 @@
 <app-alert [message]="loadingMessage"></app-alert>
 }
 
-<!---->
+
 <div class="container">
   <div class="row vh-100 align-items-center">
     <form
@@ -23,9 +23,8 @@
           required
           aria-describedby="emailHelpId"
           placeholder="Enter your email or phone number"
-          [pattern]="
-            '^(010|011|012|015)\\d{8}$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-          "
+          [pattern]="phoneEmailPattern"
+          
           [ngClass]="{
             'is-invalid': !phoneInput.valid && phoneInput.touched
           }"

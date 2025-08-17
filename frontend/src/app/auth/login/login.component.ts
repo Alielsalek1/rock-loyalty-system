@@ -18,12 +18,16 @@ export class LoginComponent implements OnInit {
   loading: boolean = false;
   loadingMessage: string = '';
   restuarantId: string;
+
+  phoneEmailPattern: RegExp = /^01\d{8,9}$|^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   constructor(
     private authService: AuthService,
     private facebookAuth: FacebookAuthService,
     private googleAuth: GoogleAuthService,
     private router: Router,
-    private toastrService: ToastrService
+    private toastrService: ToastrService,
+
   ) {}
   onSubmit() {
     const phoneEmailField: string = this.form.value.phone;
@@ -111,10 +115,8 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  private redirect(seconds: number = 5) {
-    this.toastrService.success(`redirecting in ${seconds} seconds`);
-    setTimeout(() => {
-      this.router.navigate([this.authService.restaurantId, 'main']);
-    }, seconds * 1000);
+  private redirect() {
+    this.toastrService.success(`Login Successful`);
+    this.router.navigate([this.authService.restaurantId, 'main']);
   }
 }

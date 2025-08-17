@@ -25,7 +25,8 @@ export class AuthService {
     this.user.subscribe((user) => {
       this.currentUser = user;
     });
-    this.restaurantId = "1234" // should be changed
+    const pathSegments = window.location.pathname.split('/');
+    this.restaurantId = pathSegments[1] || '1234';
   }
 
   isAuth() {
@@ -119,7 +120,7 @@ export class AuthService {
     });
     console.log('Current user token:', newUser.token ? 'Token exists' : 'No token');
     console.log('Making request to:', `${environment.apiUrl}/api/users`);
-    
+
     return this.http
       .put<UserInterface>(`${environment.apiUrl}/api/users`, {
         phoneNumber: newUser.phonenumber,

@@ -3,6 +3,8 @@ import { environment } from '../../../env';
 
 declare var FB: any;
 
+// TODO: THIS IMPLEMENTATION SHOULD BE CHANGED ENTIRELY INTO OBSERVABLE PATTERN
+
 @Injectable({
   providedIn: 'root',
 })

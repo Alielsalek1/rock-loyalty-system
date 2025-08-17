@@ -253,8 +253,8 @@ namespace LoyaltyApi
                     await context.HttpContext.Response.WriteAsync("<h1>404 - Page Not Found</h1>");
                 }
             });
-            app.UseRouting();
             app.UseHttpsRedirection();
+            app.UseRouting();
             app.UseCors("AllowAngularClient");
             app.UseAuthentication();
             app.UseAuthorization();

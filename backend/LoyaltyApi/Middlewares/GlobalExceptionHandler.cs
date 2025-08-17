@@ -57,11 +57,6 @@ public class GlobalExceptionHandler
             errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status409Conflict;
         }
-        else if (exception is DuplicateReceiptException)
-        {
-            errorResponse = new { success = false, message = exception.Message };
-            statusCode = StatusCodes.Status409Conflict;
-        }
         else if (exception is HttpRequestException)
         {
             errorResponse = new { success = false, message = "An error occurred while processing your request. Please try again later." };

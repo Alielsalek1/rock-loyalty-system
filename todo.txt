@@ -17,7 +17,8 @@ remove Expired refreshTokens, confirmEmail, ForgetPassword from the database.
 
 
 Amroosha notes:
-Create Voucher has an error when creating more than 1 voucher ('UNIQUE constraint failed: CreditPointsTransactions.ReceiptId')
-
-facebook needs this option enabled in the develepors.facebook.com in your account (ALILI)
-JSSDK option is not toggled Please toggle the "Log in with JavaScript SDK" option to Yes in developers.facebook.com to use the JSSDK for Login.
+1. add a background instead of white background
+2. add shadowbox to all form boxes
+4. differentiate between voucher transaction, and points transaction (change styling)
+5. fix mobile responsive design for points tab.
+6. add confirm password to (forget password)

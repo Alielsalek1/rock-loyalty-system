@@ -37,12 +37,10 @@ export class ConfirmEmailComponent {
       .subscribe({
         next: () => {
           this.toastrService.success(
-            'redirected in 5 seconds',
             'email confirmed'
           );
-          setTimeout(() => {
-            this.router.navigate([this.authService.restaurantId, 'main']);
-          }, 5000);
+
+          this.router.navigate([this.authService.restaurantId, 'main'])
         },
         error: (error: Error) => {
           this.toastrService.error(

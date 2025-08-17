@@ -17,9 +17,9 @@ export class PhoneComponent {
     private authService: AuthService,
     private router: Router,
     private toastrService: ToastrService
-  ) {}
+  ) { }
   loading: boolean = false;
-  
+
   onSubmit() {
     const phone: string = this.form.value.phone;
     const user: User = this.authService.currentUser;
@@ -37,10 +37,10 @@ export class PhoneComponent {
       .subscribe({
         next: (response) => {
           console.log('Update successful:', response);
-          this.toastrService.success('redirecting in 5 seconds');
-          setTimeout(() => {
-            this.router.navigate([this.authService.restaurantId, 'main']);
-          }, 5000);
+          this.toastrService.success('Login successful');
+
+          this.router.navigate([this.authService.restaurantId, 'main']);
+
         },
         error: (error) => {
           console.error('Update failed:', error);

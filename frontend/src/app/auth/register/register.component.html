@@ -14,14 +14,19 @@
 
       <div class="mb-3">
         <input
-          type="email"
+          type="text"
           class="form-control"
           name="name"
           ngModel
           #nameInput="ngModel"
           aria-describedby="emailHelpId"
           placeholder="Enter your name"
+          required
+          [ngClass]="{ 'is-invalid': !nameInput.valid && nameInput.touched }"
         />
+        <div *ngIf="nameInput.errors?.required && nameInput.touched" class="invalid-feedback">
+          Name is required
+        </div>
       </div>
 
       <div class="mb-3">

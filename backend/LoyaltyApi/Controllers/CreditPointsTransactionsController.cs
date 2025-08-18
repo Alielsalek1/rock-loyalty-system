@@ -305,20 +305,20 @@ public class CreditPointsTransactionController(
     }
 
     //TODO: DON'T USE ONLY FOR TESTING PURPOSES
-    [HttpPost("credit-points/expire")]
-    // [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> ExpirePointsJob()
-    {
-        try
-        {
-            logger.LogInformation("Running ExpirePointsJob");
-            var expired = await transactionService.ExpirePointsAsync(600, 1);
-            return Ok(expired);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error running ExpirePointsJob");
-            return StatusCode(500, new { success = false, message = "Internal server error" });
-        }
-    }
+    // [HttpPost("credit-points/expire")]
+    // // [Authorize(Roles = "Admin")]
+    // public async Task<IActionResult> ExpirePointsJob()
+    // {
+    //     try
+    //     {
+    //         logger.LogInformation("Running ExpirePointsJob");
+    //         var expired = await transactionService.ExpirePointsAsync(1234, 1);
+    //         return Ok(expired);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         logger.LogError(ex, "Error running ExpirePointsJob");
+    //         return StatusCode(500, new { success = false, message = "Internal server error" });
+    //     }
+    // }
 }

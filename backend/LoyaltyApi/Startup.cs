@@ -94,6 +94,7 @@ namespace LoyaltyApi
             services.AddScoped<IRestaurantRepository, RestaurantRepository>();
             services.AddScoped<IRestaurantService, RestaurantService>();
             services.AddScoped<ICreditPointsTransactionRepository, CreditPointsTransactionRepository>();
+            services.AddScoped<ICreditPointsTransactionDetailRepository, CreditPointsTransactionDetailRepository>();
             services.AddScoped(provider =>
 
               new OAuth2Service(new HttpClient())

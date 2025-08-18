@@ -10,10 +10,7 @@ namespace LoyaltyApi.Services
 
         public Task<CreditPointsTransaction?> GetTransactionByReceiptIdAsync(long receiptId);
 
-        public Task<PagedTransactionsResponse> GetAllTransactionsByCustomerAndRestaurantAsync(int? customerId,
-            int? restaurantId, int pageNumber, int pageSize);
-        public Task<PagedTransactionsResponse> GetViableTransactionsByCustomerAndRestaurantAsync(int? customerId,
-       int? restaurantId, int pageNumber, int pageSize);
+        public Task<PagedTransactionsResponse> GetAllTransactionsByCustomerAndRestaurantAsync(int? customerId, int? restaurantId, int pageNumber = 1, int pageSize = 10);
 
         public Task AddTransactionAsync(CreateTransactionRequest transactionRequest);
 

@@ -124,48 +124,4 @@ public class CreditPointsTransactionRepository(
         return expiredTransactions;
     }
 
-    public async Task<PagedTransactionsResponse> GetViableTransactionsByCustomerAndRestaurantAsync(int customerId, int restaurantId, int pageNumber = 1, int pageSize = 10)
-    {
-        logger.LogInformation("Getting Viable transactions for customer {CustomerId} and restaurant {RestaurantId}",
-         customerId, restaurantId);
-        var query = dbContext.CreditPointsTransactions
-            .Where(t => t.RestaurantId == restaurantId && t.CustomerId == customerId && !t.IsExpired && t.Points > 0)
-            .OrderByDescending(t => t.TransactionId)
-            .AsQueryable();
-        var totalCount = await query.CountAsync();
-        var paginatedQuery = query
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize);
-        var transactions = await paginatedQuery.ToListAsync();
-
-        var response = new PagedTransactionsResponse
-        {
-            Transactions = transactions,
-            PaginationMetadata = new PaginationMetadata
-            {
-                TotalCount = totalCount,
-                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
-                PageSize = pageSize,
-                PageNumber = pageNumber
-            }
-        };
-
-        return response;
-    }
-
-
-    public async Task<int> GetTotalPointsSpentForEarnTransaction(int earnTransactionId)
-    {
-        logger.LogInformation("Getting total points spent for earn transaction {EarnTransactionId}", earnTransactionId);
-
-        var totalPointsSpent = await dbContext.CreditPointsTransactions
-            .Where(t => t.EarnTransactionId == earnTransactionId &&
-                       (t.TransactionType == TransactionType.Spend || t.TransactionType == TransactionType.Expire))
-            .SumAsync(t => Math.Abs(t.Points));
-
-        logger.LogInformation("Total points spent for earn transaction {EarnTransactionId}: {TotalPointsSpent}",
-            earnTransactionId, totalPointsSpent);
-
-        return totalPointsSpent;
-    }
 }

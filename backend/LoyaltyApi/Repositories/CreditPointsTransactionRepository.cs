@@ -129,7 +129,7 @@ public class CreditPointsTransactionRepository(
         logger.LogInformation("Getting Viable transactions for customer {CustomerId} and restaurant {RestaurantId}",
          customerId, restaurantId);
         var query = dbContext.CreditPointsTransactions
-            .Where(t => t.RestaurantId == restaurantId && t.CustomerId == customerId && !t.IsExpired)
+            .Where(t => t.RestaurantId == restaurantId && t.CustomerId == customerId && !t.IsExpired && t.Points > 0)
             .OrderByDescending(t => t.TransactionId)
             .AsQueryable();
         var totalCount = await query.CountAsync();

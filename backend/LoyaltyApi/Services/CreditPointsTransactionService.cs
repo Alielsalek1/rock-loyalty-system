@@ -294,8 +294,32 @@ public class CreditPointsTransactionService(
         }
     }
 
-    public Task<PagedTransactionsResponse> GetViableTransactionsByCustomerAndRestaurantAsync(int? customerId, int? restaurantId, int pageNumber, int pageSize)
+    public async Task<PagedTransactionsResponse> GetViableTransactionsByCustomerAndRestaurantAsync(int? customerId, int? restaurantId, int pageNumber, int pageSize)
     {
-        throw new NotImplementedException();
+        logger.LogInformation("Getting transactions for customer {CustomerId} and restaurant {RestaurantId}",
+           customerId, restaurantId);
+
+        await ExpirePointsAsync(restaurantId ?? 0, customerId ?? 0);
+
+        int customerIdJwt = customerId ??
+                            int.Parse(httpContext.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                                      throw new ArgumentException("customerId not found"));
+        logger.LogTrace("customerIdJwt: {customerIdJwt}", customerIdJwt);
+        int restaurantIdJwt = restaurantId ??
+                              int.Parse(httpContext.HttpContext?.User?.FindFirst("restaurantId")?.Value ??
+                                        throw new ArgumentException("restaurantId not found"));
+        logger.LogTrace("restaurantIdJwt: {restaurantIdJwt}", restaurantIdJwt);
+
+        try
+        {
+            return await transactionRepository.GetViableTransactionsByCustomerAndRestaurantAsync(customerId ?? customerIdJwt,
+                restaurantId ?? restaurantIdJwt, pageNumber, pageSize);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving transactions for customer {CustomerId} and restaurant {RestaurantId}",
+                customerId, restaurantId);
+            throw new Exception("Error retrieving transactions");
+        }
     }
 }

@@ -78,6 +78,16 @@ public class GlobalExceptionHandler
             errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status500InternalServerError;
         }
+        else if (exception is NotFoundException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status404NotFound;
+        }
+        else if (exception is AlreadyExistsException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status409Conflict;
+        }
         else
         {
             errorResponse = new { success = false, message = exception.Message };

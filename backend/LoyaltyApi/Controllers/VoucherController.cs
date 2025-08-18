@@ -218,65 +218,66 @@ public class VoucherController(
         });
     }
 
-    /// <summary>
-    /// Get a voucher by short code for admin purposes.
-    /// </summary>
-    /// <param name="shortCode">The short code of the voucher.</param>
-    /// <param name="customerId">The customer ID associated with the voucher.</param>
-    /// <param name="restaurantId">The restaurant ID associated with the voucher.</param>
-    /// <returns>The long code of the voucher.</returns>
-    /// <response code="200">Voucher retrieved successfully.</response>
-    /// <response code="401">Unauthorized access.</response>
-    /// <response code="500">Server error.</response>
-    /// <remarks>
-    /// Sample request:
-    ///
-    ///     GET admin/restaurants/600/users/7/vouchers/ABCDE
-    ///
-    /// Sample response:
-    ///
-    ///     200 OK
-    ///     {
-    ///         "success": true,
-    ///         "message": "Voucher retrieved successfully",
-    ///         "data": {
-    ///             "voucher":
-    ///             {
-    ///                 "shortCode": "ABCDE",
-    ///                 "longCode": "1234567890",
-    ///                 "value": 100,
-    ///                 "isUsed": false
-    ///             }
-    ///         }
-    ///     }
-    ///
-    /// Authorization header with Admin Options.
-    /// </remarks>
-    [HttpGet]
-    [Route("admin/vouchers/{shortCode}/restaurants/{restaurantId}/users/{customerId}")]
-    // [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> GetVoucherLongCode(int restaurantId, int customerId, string shortCode)
-    {
-        logger.LogInformation("Getting voucher {ShortCode} for customer {CustomerId} and restaurant {RestaurantId}",
-            shortCode, customerId, restaurantId);
+    // /// <summary>
+    // /// Get a voucher by short code for admin purposes.
+    // /// </summary>
+    // /// <param name="shortCode">The short code of the voucher.</param>
+    // /// <param name="customerId">The customer ID associated with the voucher.</param>
+    // /// <param name="restaurantId">The restaurant ID associated with the voucher.</param>
+    // /// <returns>The long code of the voucher.</returns>
+    // /// <response code="200">Voucher retrieved successfully.</response>
+    // /// <response code="401">Unauthorized access.</response>
+    // /// <response code="500">Server error.</response>
+    // /// <remarks>
+    // /// Sample request:
+    // ///
+    // ///     GET admin/restaurants/600/users/7/vouchers/ABCDE
+    // ///
+    // /// Sample response:
+    // ///
+    // ///     200 OK
+    // ///     {
+    // ///         "success": true,
+    // ///         "message": "Voucher retrieved successfully",
+    // ///         "data": {
+    // ///             "voucher":
+    // ///             {
+    // ///                 "shortCode": "ABCDE",
+    // ///                 "longCode": "1234567890",
+    // ///                 "value": 100,
+    // ///                 "isUsed": false
+    // ///             }
+    // ///         }
+    // ///     }
+    // ///
+    // /// Authorization header with Admin Options.
+    // /// </remarks>
+    // [HttpGet]
+    // [Route("admin/vouchers/{shortCode}/restaurants/{restaurantId}/users/{customerId}")]
+    // // [Authorize(Roles = "Admin")]
+    // public async Task<ActionResult> GetVoucherLongCode(int restaurantId, int customerId, string shortCode)
+    // {
+    //     logger.LogInformation("Getting voucher {ShortCode} for customer {CustomerId} and restaurant {RestaurantId}",
+    //         shortCode, customerId, restaurantId);
 
-        Voucher voucher = await voucherService.GetVoucherAsync(customerId, restaurantId, shortCode);
-        return Ok(new
-        {
-            success = true,
-            message = "Voucher retrieved successfully",
-            data = new
-            {
-                voucher = new
-                {
-                    voucher.ShortCode,
-                    voucher.LongCode,
-                    voucher.Value,
-                    voucher.IsUsed
-                }
-            }
-        });
-    }
+    //     Voucher voucher = await voucherService.GetVoucherAsync(customerId, restaurantId, shortCode);
+    //     return Ok(new
+    //     {
+    //         success = true,
+    //         message = "Voucher retrieved successfully",
+    //         data = new
+    //         {
+    //             voucher = new
+    //             {
+    //                 voucher.ShortCode,
+    //                 voucher.LongCode,
+    //                 voucher.Value,
+    //                 voucher.IsUsed
+    //             }
+    //         }
+    //     });
+    // }
+
 
     /// <summary>
     /// Sets a voucher iUsed.

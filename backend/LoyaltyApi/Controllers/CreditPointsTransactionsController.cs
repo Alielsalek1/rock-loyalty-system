@@ -278,7 +278,7 @@ public class CreditPointsTransactionController(
         logger.LogInformation("Get transactions for customer {CustomerId} and restaurant {RestaurantId}",
             userId, restaurantId);
         var paginationResult =
-            await transactionService.GetTransactionsByCustomerAndRestaurantAsync(userId, restaurantId, pageNumber, pageSize);
+            await transactionService.GetAllTransactionsByCustomerAndRestaurantAsync(userId, restaurantId, pageNumber, pageSize);
         var transactions = paginationResult.Transactions;
         var restaurantSettings = await restaurantService.GetRestaurantById(restaurantId) ?? throw new Exception("Restaurant not found");
         var transactionsResponse = transactions.Select(t => new
@@ -305,20 +305,20 @@ public class CreditPointsTransactionController(
     }
 
     //TODO: DON'T USE ONLY FOR TESTING PURPOSES
-    // [HttpPost("credit-points/expire")]
+    [HttpPost("credit-points/expire")]
     // [Authorize(Roles = "Admin")]
-    // public async Task<IActionResult> ExpirePointsJob()
-    // {
-    //     try
-    //     {
-    //         logger.LogInformation("Running ExpirePointsJob");
-    //         var expired = await transactionService.ExpirePointsAsync();
-    //         return Ok(expired);
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         logger.LogError(ex, "Error running ExpirePointsJob");
-    //         return StatusCode(500, new { success = false, message = "Internal server error" });
-    //     }
-    // }
+    public async Task<IActionResult> ExpirePointsJob()
+    {
+        try
+        {
+            logger.LogInformation("Running ExpirePointsJob");
+            var expired = await transactionService.ExpirePointsAsync(600, 1);
+            return Ok(expired);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error running ExpirePointsJob");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
+        }
+    }
 }

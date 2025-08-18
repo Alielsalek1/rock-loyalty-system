@@ -72,6 +72,21 @@ public class GlobalExceptionHandler
             errorResponse = new { success = false, message = "Invalid token." };
             statusCode = StatusCodes.Status401Unauthorized;
         }
+        else if (exception is ExpirePointsFailedException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status500InternalServerError;
+        }
+        else if (exception is ArgumentException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status400BadRequest;
+        }
+        else if (exception is MinimumPointsNotReachedException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status422UnprocessableEntity;
+        }
         else
         {
             errorResponse = new { success = false, message = exception.Message };

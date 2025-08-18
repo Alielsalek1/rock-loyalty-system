@@ -9,7 +9,6 @@ namespace LoyaltyApi.Services
         Task<Restaurant?> GetRestaurantById(int restaurantId);
         Task<double?> GetCreditPointBuyingRate(int restaurantId);
         Task<double?> GetCreditPointSellingRate(int restaurantId);
-        Task<double?> GetLoyaltyPointBuyingRate(int restaurantId);
         Task<int?> GetVoucherLifeTime(int restaurantId);
 
         //Update Methods

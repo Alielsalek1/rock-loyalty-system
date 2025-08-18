@@ -6,16 +6,18 @@ using LoyaltyApi.Models;
 using LoyaltyApi.Repositories;
 using LoyaltyApi.RequestModels;
 using LoyaltyApi.Utilities;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace LoyaltyApi.Services;
 
 public class CreditPointsTransactionService(
     ICreditPointsTransactionRepository transactionRepository,
-    ICreditPointsTransactionDetailRepository transactionDetailRepository,
+    // ICreditPointsTransactionDetailRepository transactionDetailRepository, // Commented out - functionality moved to main repo
     IRestaurantRepository restaurantRepository,
     FrontendDbContext context,
     IHttpContextAccessor httpContext,
     CreditPointsUtility creditPointsUtility,
+    IUserRepository userRepository, // Changed from UserFrontendRepository to IUserRepository
     ILogger<CreditPointsTransactionService> logger) : ICreditPointsTransactionService
 {
     public async Task<CreditPointsTransaction?> GetTransactionByIdAsync(int transactionId)
@@ -46,7 +48,7 @@ public class CreditPointsTransactionService(
         }
     }
 
-    public async Task<PagedTransactionsResponse> GetTransactionsByCustomerAndRestaurantAsync
+    public async Task<PagedTransactionsResponse> GetAllTransactionsByCustomerAndRestaurantAsync
         (int? customerId, int? restaurantId, int pageNumber = 1, int pageSize = 10)
     {
         logger.LogInformation("Getting transactions for customer {CustomerId} and restaurant {RestaurantId}",
@@ -62,7 +64,7 @@ public class CreditPointsTransactionService(
 
         try
         {
-            return await transactionRepository.GetTransactionsByCustomerAndRestaurantAsync(customerId ?? customerIdJwt,
+            return await transactionRepository.GetAllTransactionsByCustomerAndRestaurantAsync(customerId ?? customerIdJwt,
                 restaurantId ?? restaurantIdJwt, pageNumber, pageSize);
         }
         catch (Exception ex)
@@ -96,26 +98,13 @@ public class CreditPointsTransactionService(
             TransactionType = TransactionType.Earn,
             Points = pointsEarned,
             TransactionValue = transactionRequest.Amount,
-            TransactionDate = transactionRequest.TransactionDate ?? DateTime.Now
+            TransactionDate = transactionRequest.TransactionDate ?? DateTime.Now,
+            RemainingPoints = pointsEarned // Initialize remaining points to the earned amount
         };
         await transactionRepository.AddTransactionAsync(transaction);
     }
 
-    /// <summary>
-    /// Spends the specified number of credit points for a customer at a restaurant.
-    /// 
-    /// This function starts a database transaction, retrieves the customer's available transactions, 
-    /// checks if there are enough points to spend, creates a new spend transaction, and distributes 
-    /// the points across available transactions.
-    /// 
-    /// Parameters:
-    ///   customerId (int): The ID of the customer spending the points.
-    ///   restaurantId (int): The ID of the restaurant where the points are being spent.
-    ///   points (int): The number of points to spend.
-    /// 
-    /// Returns:
-    ///   Task: A task representing the asynchronous operation.
-    /// </summary>
+
     public async Task SpendPointsAsync(int customerId, int restaurantId, int points)
     {
         logger.LogInformation("Spending {Points} points for customer {CustomerId} at restaurant {RestaurantId}", points,
@@ -123,7 +112,11 @@ public class CreditPointsTransactionService(
         var restaurant = await restaurantRepository.GetRestaurantById(restaurantId) ??
                          throw new ArgumentException("Invalid restaurant");
 
-        await using var dbTransaction = await context.Database.BeginTransactionAsync(); // Start a database transaction
+
+        // Expire points BEFORE starting the spend transaction //
+        await ExpirePointsAsync(restaurantId, customerId);
+
+        await using var dbTransaction = await context.Database.BeginTransactionAsync(); // Start transaction for spending
 
         try
         {
@@ -135,25 +128,14 @@ public class CreditPointsTransactionService(
 
             // Check if there are enough points before proceeding
             var totalAvailablePoints = transactions.Sum(t => t.Points);
-            
+
             if (totalAvailablePoints < points)
             {
                 throw new PointsNotEnoughException("Not enough points");
             }
 
-            // Create a new spend transaction
-            var spendTransaction = new CreditPointsTransaction
-            {
-                CustomerId = customerId,
-                RestaurantId = restaurantId,
-                Points = -points,
-                TransactionType = TransactionType.Spend,
-                TransactionDate = DateTime.Now,
-                TransactionValue = points / restaurant.CreditPointsBuyingRate
-            };
-
-            await context.CreditPointsTransactions.AddAsync(spendTransaction);
-            await context.SaveChangesAsync();
+            // Create a list to store individual spend transactions (replaces transaction details)
+            var spendTransactions = new List<CreditPointsTransaction>();
 
             // Distribute the points to spend across available transactions
             foreach (var transaction in transactions
@@ -165,7 +147,7 @@ public class CreditPointsTransactionService(
                 if (remainingPoints <= 0) break;
 
                 var spentPoints =
-                    await transactionDetailRepository.GetTotalPointsSpentForEarnTransaction(transaction.TransactionId);
+                    await transactionRepository.GetTotalPointsSpentForEarnTransaction(transaction.TransactionId);
 
                 var availablePoints = transaction.Points - spentPoints;
 
@@ -174,15 +156,23 @@ public class CreditPointsTransactionService(
                 var pointsToUse = Math.Min(availablePoints, remainingPoints);
                 remainingPoints -= pointsToUse;
 
-                var transactionDetail = new CreditPointsTransactionDetail
+                // Create individual spend transaction for each earn transaction used (replaces transaction detail)
+                var spendTransaction = new CreditPointsTransaction
                 {
-                    TransactionId = spendTransaction.TransactionId,
-                    EarnTransactionId = transaction.TransactionId,
-                    PointsUsed = pointsToUse,
+                    CustomerId = customerId,
+                    RestaurantId = restaurantId,
+                    Points = -pointsToUse,
+                    TransactionType = TransactionType.Spend,
+                    TransactionDate = DateTime.Now,
+                    TransactionValue = pointsToUse / restaurant.CreditPointsBuyingRate,
+                    EarnTransactionId = transaction.TransactionId // Link to the earn transaction
                 };
 
-                await context.CreditPointsTransactionsDetails.AddAsync(transactionDetail);
+                spendTransactions.Add(spendTransaction);
             }
+
+            // Add all spend transactions to database
+            await transactionRepository.AddTransactionsAsync(spendTransactions);
 
             await context.SaveChangesAsync();
             await dbTransaction.CommitAsync();
@@ -196,6 +186,7 @@ public class CreditPointsTransactionService(
 
     public async Task<int> GetCustomerPointsAsync(int? customerId, int? restaurantId)
     {
+
         logger.LogInformation("Getting customer points for customer {CustomerId} and restaurant {RestaurantId}",
             customerId, restaurantId);
         int customerIdJwt = customerId ??
@@ -207,50 +198,69 @@ public class CreditPointsTransactionService(
                                         throw new ArgumentException("restaurantId not found"));
         logger.LogTrace("restaurantIdJwt: {restaurantIdJwt}", restaurantIdJwt);
 
+        await ExpirePointsAsync(restaurantId ?? 0, customerId ?? 0);
+
         return await transactionRepository.GetCustomerPointsAsync(customerId ?? customerIdJwt,
             restaurantId ?? restaurantIdJwt);
     }
 
-    public async Task<int> ExpirePointsAsync()
+    public async Task<int> ExpirePointsAsync(int restaurantId, int customerId)
     {
-        logger.LogInformation("Expiring points");
+        logger.LogInformation("Expiring points points for customer {CustomerId} at restaurant {RestaurantId}",
+            customerId, restaurantId);
+
+        Restaurant? restaurant = await restaurantRepository.GetRestaurantById(restaurantId) ??
+           throw new NullReferenceException("Restaurant not found");
+        User customer = new()
+        {
+            Id = customerId,
+            RestaurantId = restaurant.RestaurantId
+
+        };
+        User user = await userRepository.GetUserAsync(customer) ?? throw new NullReferenceException("User not found");
         await using var dbTransaction = await context.Database.BeginTransactionAsync(); // Start a database transaction
 
         try
         {
+            logger.LogInformation("Starting point expiration process");
+
+            //TODO::Useless shit
             // Load all restaurant data into memory (ID and CreditPointsLifeTime)
-            logger.LogInformation("Fetching all restaurants for point expiration");
-            var restaurants = await restaurantRepository.GetAllRestaurantsAsync();
-            logger.LogInformation("Fetched {restaurants} restaurants for point expiration", restaurants);
-            var restaurantMap = restaurants.ToDictionary(
-                r => r.RestaurantId, restaurant => restaurant);
-            var currentDateTime = DateTime.Now;
+            // logger.LogInformation("Fetching all restaurants for point expiration");
+            // var restaurants = await restaurantRepository.GetAllRestaurantsAsync();
+            // logger.LogInformation("Fetched {restaurants} restaurants for point expiration", restaurants);
+            // var restaurantMap = restaurants.ToDictionary(
+            //     r => r.RestaurantId, restaurant => restaurant);
+            // var currentDateTime = DateTime.Now;
             // Fetch all transactions that have expired based on the restaurant's lifetime
+
+            var currentDateTime = DateTime.Now;
             var expiredTransactions =
-                await transactionRepository.GetExpiredTransactionsAsync(restaurantMap, currentDateTime);
+                await transactionRepository.GetExpiredTransactionsByCustomerAndRestaurantAsync(restaurant, user.Id, currentDateTime);
 
             if (!expiredTransactions.Any())
             {
-                return 0; // No transactions to expire
+                logger.LogInformation("No expired transactions found for customer {CustomerId} at restaurant {RestaurantId}",
+                    user.Id, restaurant.RestaurantId);
+                return 0;
             }
 
-            // Create lists to hold new expiration transactions and transaction data
-            var expirationTransactions = new List<CreditPointsTransaction>();
-            var transactionDetailsData = new List<(int EarnTransactionId, int PointsUsed)>();
+            // Create lists to hold new expiration transactions (no need for transaction details anymore)
+            var expiringTanscations = new List<CreditPointsTransaction>();
 
             // Process the expired transactions
             foreach (var transaction in expiredTransactions)
             {
                 // Fetch total points spent from this earn transaction
                 var pointsSpent =
-                    await transactionDetailRepository.GetTotalPointsSpentForEarnTransaction(transaction.TransactionId);
+                    await transactionRepository.GetTotalPointsSpentForEarnTransaction(transaction.TransactionId);
 
                 // Calculate remaining points that can be expired
                 var remainingPoints = transaction.Points - pointsSpent;
 
                 if (remainingPoints > 0)
                 {
-                    // Create an expire transaction
+                    // Create an expire transaction (similar to spend transaction)
                     var expireTransaction = new CreditPointsTransaction
                     {
                         CustomerId = transaction.CustomerId,
@@ -258,47 +268,34 @@ public class CreditPointsTransactionService(
                         Points = -remainingPoints,
                         TransactionType = TransactionType.Expire,
                         TransactionDate = currentDateTime,
-                        TransactionValue = remainingPoints * restaurantMap[transaction.RestaurantId].CreditPointsSellingRate
+                        TransactionValue = remainingPoints * restaurant.CreditPointsSellingRate,
+                        EarnTransactionId = transaction.TransactionId // Link to the earn transaction being expired
                     };
-                    expirationTransactions.Add(expireTransaction);
-
-                    // Store data for creating transaction details later
-                    transactionDetailsData.Add((transaction.TransactionId, remainingPoints));
+                    expiringTanscations.Add(expireTransaction);
 
                     transaction.IsExpired = true; // Mark the original `earn` transaction as expired
                     await transactionRepository.UpdateTransactionAsync(transaction);
                 }
             }
 
-            // First, add new expiration transactions to get their IDs
-            await transactionRepository.AddTransactionsAsync(expirationTransactions);
-
-            // Now create transaction details with the correct TransactionIds
-            var expirationDetails = new List<CreditPointsTransactionDetail>();
-            foreach (var (transaction, detailData) in expirationTransactions.Zip(transactionDetailsData))
-            {
-                var expireDetail = new CreditPointsTransactionDetail
-                {
-                    TransactionId = transaction.TransactionId, // Now has the correct generated ID
-                    EarnTransactionId = detailData.EarnTransactionId,
-                    PointsUsed = detailData.PointsUsed
-                };
-                expirationDetails.Add(expireDetail);
-            }
-
-            // Add transaction details to the database
-            await transactionDetailRepository.AddTransactionsDetailsAsync(expirationDetails);
+            // Add new expiration transactions to database
+            await transactionRepository.AddTransactionsAsync(expiringTanscations);
 
             // Commit the changes
             await context.SaveChangesAsync();
             await dbTransaction.CommitAsync();
 
-            return expirationTransactions.Count;
+            return expiringTanscations.Count;
         }
         catch
         {
             await dbTransaction.RollbackAsync(); // Rollback transaction on error
-            throw;
+            throw new ExpirePointsFailedException("Failed to expire points");
         }
+    }
+
+    public Task<PagedTransactionsResponse> GetViableTransactionsByCustomerAndRestaurantAsync(int? customerId, int? restaurantId, int pageNumber, int pageSize)
+    {
+        throw new NotImplementedException();
     }
 }

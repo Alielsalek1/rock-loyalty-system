@@ -29,7 +29,8 @@ namespace LoyaltyApi.Data
 
         public DbSet<CreditPointsTransaction> CreditPointsTransactions { get; set; }
 
-        public DbSet<CreditPointsTransactionDetail> CreditPointsTransactionsDetails { get; set; }
+        // Commented out - functionality moved to CreditPointsTransaction
+        // public DbSet<CreditPointsTransactionDetail> CreditPointsTransactionsDetails { get; set; }
 
         public DbSet<Restaurant> Restaurants { get; set; }
 
@@ -75,32 +76,32 @@ namespace LoyaltyApi.Data
             modelBuilder.Entity<CreditPointsTransaction>()
                 .HasIndex(p => p.ReceiptId);
 
+            // Add index on EarnTransactionId for better performance
             modelBuilder.Entity<CreditPointsTransaction>()
-                .HasOne(p => p.Restaurant)
-                .WithMany()
-                .HasForeignKey(p => p.RestaurantId);
+                .HasIndex(p => p.EarnTransactionId);
 
-            modelBuilder.Entity<CreditPointsTransactionDetail>()
-                .HasKey(d => d.DetailId);
-
-            modelBuilder.Entity<CreditPointsTransactionDetail>()
-                .Property(d => d.DetailId)
-                .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<CreditPointsTransactionDetail>()
-                .HasOne(d => d.Transaction)
-                .WithMany(p => p.CreditPointsTransactionDetails)
-                .HasForeignKey(d => d.TransactionId);
-
-            modelBuilder.Entity<CreditPointsTransaction>()
-                .HasMany(p => p.CreditPointsTransactionDetails)
-                .WithOne(d => d.Transaction)
-                .HasForeignKey(d => d.TransactionId);
-
-            modelBuilder.Entity<CreditPointsTransactionDetail>()
-                .HasOne(d => d.EarnTransaction)
-                .WithMany()
-                .HasForeignKey(d => d.EarnTransactionId);
+            // Commented out CreditPointsTransactionDetail configurations
+            // modelBuilder.Entity<CreditPointsTransactionDetail>()
+            //     .HasKey(d => d.DetailId);
+            //
+            // modelBuilder.Entity<CreditPointsTransactionDetail>()
+            //     .Property(d => d.DetailId)
+            //     .ValueGeneratedOnAdd();
+            //
+            // modelBuilder.Entity<CreditPointsTransactionDetail>()
+            //     .HasOne(d => d.Transaction)
+            //     .WithMany(p => p.CreditPointsTransactionDetails)
+            //     .HasForeignKey(d => d.TransactionId);
+            //
+            // modelBuilder.Entity<CreditPointsTransaction>()
+            //     .HasMany(p => p.CreditPointsTransactionDetails)
+            //     .WithOne(d => d.Transaction)
+            //     .HasForeignKey(d => d.TransactionId);
+            //
+            // modelBuilder.Entity<CreditPointsTransactionDetail>()
+            //     .HasOne(d => d.EarnTransaction)
+            //     .WithMany()
+            //     .HasForeignKey(d => d.EarnTransactionId);
 
             modelBuilder.Entity<CreditPointsTransaction>()
                 .Property(p => p.TransactionType)
@@ -112,6 +113,10 @@ namespace LoyaltyApi.Data
             modelBuilder.Entity<Password>()
             .Property(p => p.ConfirmedEmail)
             .HasDefaultValue(false);
+
+
+
+            // No need for additional index since the composite key already creates one
 
             base.OnModelCreating(modelBuilder);
         }

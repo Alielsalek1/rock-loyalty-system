@@ -28,13 +28,6 @@ namespace LoyaltyApi.Services
             return result.CreditPointsSellingRate;
         }
 
-        public async Task<double?> GetLoyaltyPointBuyingRate(int restaurantId)
-        {
-            logger.LogInformation("Getting loyalty point buying rate for restaurant {restaurantId}", restaurantId);
-            var result = await repository.GetRestaurantById(restaurantId);
-            if (result == null) return null;
-            return result.LoyaltyPointsBuyingRate;
-        }
         public async Task<int?> GetVoucherLifeTime(int restaurantId)
         {
             logger.LogInformation("Getting voucher life time for restaurant {restaurantId}", restaurantId);
@@ -66,10 +59,7 @@ namespace LoyaltyApi.Services
                 RestaurantId = createRestaurant.RestaurantId,
                 CreditPointsBuyingRate = createRestaurant.CreditPointsBuyingRate,
                 CreditPointsSellingRate = createRestaurant.CreditPointsSellingRate,
-                LoyaltyPointsBuyingRate = createRestaurant.LoyaltyPointsBuyingRate,
-                LoyaltyPointsSellingRate = createRestaurant.LoyaltyPointsSellingRate,
                 CreditPointsLifeTime = createRestaurant.CreditPointsLifeTime,
-                LoyaltyPointsLifeTime = createRestaurant.LoyaltyPointsLifeTime,
                 VoucherLifeTime = createRestaurant.VoucherLifeTime
             };
 

@@ -12,16 +12,13 @@ public class CreditPointsTransactionRepository(
     public async Task<CreditPointsTransaction?> GetTransactionByIdAsync(int transactionId)
     {
         logger.LogInformation("Getting transaction {TransactionId}", transactionId);
-        return await dbContext.CreditPointsTransactions
-            .Include(t => t.CreditPointsTransactionDetails)
-            .FirstOrDefaultAsync(t => t.TransactionId == transactionId);
+        return await dbContext.CreditPointsTransactions.FirstOrDefaultAsync(t => t.TransactionId == transactionId);
     }
 
     public async Task<CreditPointsTransaction?> GetTransactionByReceiptIdAsync(long receiptId)
     {
         logger.LogInformation("Getting transaction for receipt {ReceiptId}", receiptId);
         return await dbContext.CreditPointsTransactions
-            .Include(t => t.CreditPointsTransactionDetails)
             .FirstOrDefaultAsync(t => t.ReceiptId == receiptId);
     }
 
@@ -35,7 +32,7 @@ public class CreditPointsTransactionRepository(
             .ToListAsync();
     }
 
-    public async Task<PagedTransactionsResponse> GetTransactionsByCustomerAndRestaurantAsync(int customerId,
+    public async Task<PagedTransactionsResponse> GetAllTransactionsByCustomerAndRestaurantAsync(int customerId,
         int restaurantId, int pageNumber, int pageSize)
     {
         logger.LogInformation("Getting transactions for customer {CustomerId} and restaurant {RestaurantId}",
@@ -107,20 +104,68 @@ public class CreditPointsTransactionRepository(
             .SumAsync(t => t.Points);
     }
 
-    public async Task<IEnumerable<CreditPointsTransaction>> GetExpiredTransactionsAsync(
-        Dictionary<int, Restaurant> restaurantMap, DateTime currentDate)
+    public async Task<IEnumerable<CreditPointsTransaction>> GetExpiredTransactionsByCustomerAndRestaurantAsync(
+        Restaurant restaurant, int customerId, DateTime currentDate)
     {
-        // Use SQL query to get all transactions that have expired based on the restaurant's lifetime
-        var query = from transaction in dbContext.CreditPointsTransactions
-            join restaurant in dbContext.Restaurants
-                on transaction.RestaurantId equals restaurant.RestaurantId
-            where
-                transaction.TransactionDate < currentDate.AddDays(-restaurant.CreditPointsLifeTime) &&
-                transaction.TransactionType == TransactionType.Earn &&
-                transaction.IsExpired == false &&
-                transaction.Points > 0
-            select transaction;
-        logger.LogInformation("Getting expired transactions");
-        return await query.ToListAsync();
+        logger.LogInformation("Getting expired transactions for customer {CustomerId} and restaurant {RestaurantId}",
+            customerId, restaurant.RestaurantId);
+
+        var expirationDate = currentDate.AddDays(-restaurant.CreditPointsLifeTime);
+
+        var expiredTransactions = await dbContext.CreditPointsTransactions
+            .Where(t => t.RestaurantId == restaurant.RestaurantId
+                     && t.CustomerId == customerId
+                     && t.TransactionDate < expirationDate
+                     && t.TransactionType == TransactionType.Earn
+                     && !t.IsExpired
+                     && t.Points > 0)
+            .ToListAsync();
+
+        return expiredTransactions;
+    }
+
+    public async Task<PagedTransactionsResponse> GetViableTransactionsByCustomerAndRestaurantAsync(int customerId, int restaurantId, int pageNumber = 1, int pageSize = 10)
+    {
+        logger.LogInformation("Getting Viable transactions for customer {CustomerId} and restaurant {RestaurantId}",
+         customerId, restaurantId);
+        var query = dbContext.CreditPointsTransactions
+            .Where(t => t.RestaurantId == restaurantId && t.CustomerId == customerId && !t.IsExpired)
+            .OrderByDescending(t => t.TransactionId)
+            .AsQueryable();
+        var totalCount = await query.CountAsync();
+        var paginatedQuery = query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize);
+        var transactions = await paginatedQuery.ToListAsync();
+
+        var response = new PagedTransactionsResponse
+        {
+            Transactions = transactions,
+            PaginationMetadata = new PaginationMetadata
+            {
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling((double)totalCount / pageSize),
+                PageSize = pageSize,
+                PageNumber = pageNumber
+            }
+        };
+
+        return response;
+    }
+
+
+    public async Task<int> GetTotalPointsSpentForEarnTransaction(int earnTransactionId)
+    {
+        logger.LogInformation("Getting total points spent for earn transaction {EarnTransactionId}", earnTransactionId);
+
+        var totalPointsSpent = await dbContext.CreditPointsTransactions
+            .Where(t => t.EarnTransactionId == earnTransactionId &&
+                       (t.TransactionType == TransactionType.Spend || t.TransactionType == TransactionType.Expire))
+            .SumAsync(t => Math.Abs(t.Points));
+
+        logger.LogInformation("Total points spent for earn transaction {EarnTransactionId}: {TotalPointsSpent}",
+            earnTransactionId, totalPointsSpent);
+
+        return totalPointsSpent;
     }
 }

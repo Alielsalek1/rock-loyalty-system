@@ -11,7 +11,7 @@ public interface ICreditPointsTransactionRepository
 
     Task<IEnumerable<CreditPointsTransaction>> GetAllTransactionsByCustomerAndRestaurantAsync(int customerId, int restaurantId);
 
-    public Task<PagedTransactionsResponse> GetTransactionsByCustomerAndRestaurantAsync(int customerId,
+    public Task<PagedTransactionsResponse> GetAllTransactionsByCustomerAndRestaurantAsync(int customerId,
         int restaurantId, int pageNumber = 1, int pageSize = 10);
 
     public Task AddTransactionAsync(CreditPointsTransaction transaction);
@@ -24,6 +24,12 @@ public interface ICreditPointsTransactionRepository
 
     public Task<int> GetCustomerPointsAsync(int customerId, int restaurantId);
 
-    public Task<IEnumerable<CreditPointsTransaction>> GetExpiredTransactionsAsync(Dictionary<int, Restaurant> restaurantMap,
-        DateTime currentDate);
+    public Task<IEnumerable<CreditPointsTransaction>> GetExpiredTransactionsByCustomerAndRestaurantAsync(Restaurant restaurant, int customerId, DateTime currentDate);
+
+    public Task<PagedTransactionsResponse> GetViableTransactionsByCustomerAndRestaurantAsync(int customerId,
+    int restaurantId, int pageNumber = 1, int pageSize = 10);
+
+    // New methods to replace transaction detail functionality
+    public Task<int> GetTotalPointsSpentForEarnTransaction(int earnTransactionId);
+
 }

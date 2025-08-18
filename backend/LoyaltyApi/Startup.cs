@@ -103,8 +103,6 @@ namespace LoyaltyApi
             services.AddScoped<CreditPointsUtility>();
             services.AddScoped<TokenUtility>();
             services.AddScoped<EmailService>();
-            services.AddScoped<ICreditPointsTransactionDetailRepository, CreditPointsTransactionDetailRepository>();
-            services.AddScoped<ICreditPointsTransactionRepository, CreditPointsTransactionRepository>();
             services.AddScoped<ICreditPointsTransactionService, CreditPointsTransactionService>();
             services.AddScoped<IPasswordHasher<Password>, PasswordHasher<Password>>();
             services.AddScoped<IPasswordRepository, PasswordRepository>();

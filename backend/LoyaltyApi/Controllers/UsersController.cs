@@ -62,7 +62,6 @@ public class UsersController(
     ///         }
     ///     }
     ///
-    /// Authorization header with JWT Bearer token is required.
     /// </remarks>
     /// <response code="201">If the user is created successfully.</response>
     /// <response code="400">If the request body is invalid.</response>
@@ -125,7 +124,7 @@ public class UsersController(
     ///         }
     ///     }
     /// 
-    /// Authorization header with JWT Bearer token is required.
+    /// Authorization header With Admin Options is required.
     /// </remarks>
     /// <response code="200">If the user is found successfully.</response>
     /// <response code="401">If the user is not authorized.</response>
@@ -251,7 +250,7 @@ public class UsersController(
     ///         }
     ///     }
     ///
-    /// Authorization header with JWT Bearer token is required.
+    /// Authorization header with Admin Options
     /// </remarks>
     /// <response code="200">If the user is found successfully.</response>
     /// <response code="401">If the user is not authorized.</response>
@@ -277,6 +276,45 @@ public class UsersController(
             data = new { user }
         });
     }
+
+    /// <summary>
+    /// Updates a user from their Jwt Token.
+    /// </summary>
+    /// <returns> The updated user. </returns>
+    /// <remarks>
+    ///
+    /// Sample request:
+    ///
+    ///     PUT /api/users
+    ///     {
+    ///         "phoneNumber": "9876543210",
+    ///         "email": "newemail@example.com",
+    ///         "name": "Jane Doe"
+    ///     }
+    /// 
+    /// Sample response:
+    ///
+    ///     200 OK
+    ///     {
+    ///         "success": true,
+    ///         "message": "User updated",
+    ///         "data": {
+    ///             "user": {
+    ///                  "id": "1",
+    ///                  "email": "newemail@example.com",
+    ///                  "phoneNumber": "9876543210",
+    ///                  "restaurantId": "600",
+    ///                  "name": "Jane Doe",
+    ///              }
+    ///         }
+    ///     }
+    ///
+    /// Authorization header with JWT Token is required
+    /// </remarks>
+    /// <response code="200">If the user is found successfully.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="404">If the user is not found.</response>
+    /// <response code="500">If any other exception occurs.</response>
     [HttpPut]
     [Route("")]
     [Authorize(Roles = "User")]

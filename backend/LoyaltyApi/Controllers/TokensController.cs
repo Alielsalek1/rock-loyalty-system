@@ -21,8 +21,9 @@ public class TokensController(
     IOptions<JwtOptions> jwtOptions,
     ILogger<TokensController> logger) : ControllerBase
 {
+    
     /// <summary>
-    /// Refreshes the access and refresh tokens.
+    /// Refreshes the access token.
     /// </summary>
     /// <remarks>
     /// 
@@ -39,7 +40,6 @@ public class TokensController(
     ///         }
     ///     }
     /// 
-    /// Authorization header with JWT Bearer token is required.
     /// </remarks>
     /// <returns> Access Token in the response and Refresh Token is set in a cookie.</returns>
     /// <response code="200">If the tokens are refreshed successfully.</response>

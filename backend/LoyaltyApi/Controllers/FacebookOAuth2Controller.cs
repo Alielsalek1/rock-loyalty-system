@@ -19,18 +19,42 @@ ITokenService tokenService,
 IOptions<JwtOptions> jwtOptions) : ControllerBase
 {
     /// <summary>
-    /// Initiates the Facebook sign-in process.
+    /// Handles Facebook OAuth2 sign-in and creates or authenticates a user.
     /// </summary>
-    /// <param name="restaurantId">The ID of the restaurant initiating the sign-in.</param>
+    /// <param name="body">The OAuth2 body containing the Facebook access token and restaurant ID.</param>
     /// <returns>
-    /// A Challenge result to redirect the user to Facebook's OAuth2 login page.
+    /// An ActionResult containing user information and JWT tokens if successful.
     /// </returns>
-    /// <response code="302">Redirects to Facebook's OAuth2 login page.</response>
+    /// <response code="200">User authenticated successfully.</response>
+    /// <response code="400">Invalid request body or Facebook token.</response>
+    /// <response code="500">Server error during authentication.</response>
     /// <remarks>
     /// Sample request:
     ///
-    ///     GET /api/oauth2/signin-facebook?restaurantId=1
+    ///     POST /api/oauth2/signin-facebook
+    ///     {
+    ///         "accessToken": "facebook_access_token_here",
+    ///         "restaurantId": 1
+    ///     }
     ///
+    /// Sample response:
+    ///
+    ///     200 OK
+    ///     {
+    ///         "success": true,
+    ///         "message": "Login successful",
+    ///         "data": {
+    ///             "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    ///             "user": {
+    ///                 "id": 1,
+    ///                 "name": "John Doe",
+    ///                 "email": "john.doe@example.com",
+    ///                 "restaurantId": 1
+    ///             }
+    ///         }
+    ///     }
+    /// 
+    /// The refresh token is set as an HTTP-only cookie.
     /// </remarks>
     [HttpPost("signin-facebook")]
     public async Task<ActionResult> SignInWithFacebook([FromBody] OAuth2Body body)

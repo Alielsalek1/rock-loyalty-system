@@ -9,7 +9,7 @@ using LoyaltyApi.Exceptions;
 namespace LoyaltyApi.Controllers;
 
 /// <summary>
-///  Controller for managing credit points transactions. 
+/// Controller for managing credit points transactions and synchronization with external systems.
 /// </summary>
 [Route("api")]
 [ApiController]
@@ -54,8 +54,7 @@ public class CreditPointsTransactionController(
     ///         "message": "Transaction retrieved successfully"
     ///     }
     ///
-    ///  **Admin Only Endpoint**
-    /// Authorization header with JWT Bearer token is required.
+    /// Authorization header with Admin Options..
     /// </remarks>
     [HttpGet]
     [Route("admin/credit-points-transactions/{transactionId}")]
@@ -125,8 +124,7 @@ public class CreditPointsTransactionController(
     ///         "message": "Transaction retrieved successfully"
     ///     }
     ///
-    ///  **Admin Only Endpoint**
-    /// Authorization header with JWT Bearer token is required.
+    /// Authorization header with Admin Options.
     /// </remarks>
     [HttpGet]
     [Route("admin/credit-points-transactions/receipt/{receiptId}")]
@@ -160,7 +158,6 @@ public class CreditPointsTransactionController(
         });
     }
 
-    // Add transaction
     /// <summary>
     /// Creates a new credit points transaction.
     /// </summary>
@@ -189,8 +186,7 @@ public class CreditPointsTransactionController(
     ///         message: "Credit points transaction created"
     ///     }
     ///
-    ///  **Admin Only Endpoint**
-    /// Authorization header with JWT Bearer token is required.
+    /// Authorization header with Admin Options is required.
     /// </remarks>
     [HttpPost]
     [Route("admin/credit-points-transactions")]
@@ -211,7 +207,6 @@ public class CreditPointsTransactionController(
             new { success = true, message = "Credit points transaction created" });
     }
 
-    // Get all transactions made by customerId and restaurantId
     /// <summary>
     /// Retrieves all credit points transactions made by a customer and restaurant.
     /// </summary>

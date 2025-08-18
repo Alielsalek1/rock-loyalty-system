@@ -156,7 +156,7 @@ public class VoucherController(
     /// <remarks>
     /// Sample request:
     ///
-    ///     GET /vouchers?pageNumber=1&pageSize=10
+    ///     GET /api/vouchers?pageNumber=1&amp;pageSize=10
     ///
     /// Sample response:
     ///
@@ -250,8 +250,7 @@ public class VoucherController(
     ///         }
     ///     }
     ///
-    ///  **Admin Only Endpoint**
-    /// Authorization header with JWT Bearer token is required.
+    /// Authorization header with Admin Options.
     /// </remarks>
     [HttpGet]
     [Route("admin/vouchers/{shortCode}/restaurants/{restaurantId}/users/{customerId}")]
@@ -278,6 +277,7 @@ public class VoucherController(
             }
         });
     }
+
     /// <summary>
     /// Sets a voucher iUsed.
     /// </summary>
@@ -310,6 +310,7 @@ public class VoucherController(
     ///         }
     ///     }
     ///
+    /// Authorization header with Admin Options.
     /// </remarks>
     [HttpPut]
     [Route("admin/vouchers/{shortCode}")]
@@ -335,6 +336,7 @@ public class VoucherController(
             }
         });
     }
+
     /// <summary>
     /// Gets all vouchers for a customer with a specific restaurant ID.
     /// </summary>
@@ -349,7 +351,7 @@ public class VoucherController(
     /// <remarks>
     /// Sample request:
     ///
-    ///     GET /api/vouchers/admin/vouchers/restaurants/1/users/2?pageNumber=1&pageSize=10
+    ///     GET /api/admin/vouchers/restaurants/1/users/2?pageNumber=1&amp;pageSize=10
     ///
     /// Sample response:
     ///
@@ -379,6 +381,7 @@ public class VoucherController(
     ///         }
     ///     }
     ///
+    /// Authorization header with Admin Options.
     /// </remarks>
     [HttpGet]
     [Route("admin/vouchers/restaurants/{restaurantId}/users/{customerId}")]

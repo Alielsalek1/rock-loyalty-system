@@ -203,6 +203,37 @@ namespace LoyaltyApi
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>
             {
+                // Configure API Information
+                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Rock Loyalty System API",
+                    Version = "v1.0",
+                    Description = @"
+## Overview
+The Rock Loyalty System provides APIs for managing customer loyalty points and vouchers. Customers earn points on purchases and redeem points for vouchers.
+
+**Note**: All user management operations are handled through API calls to the Main System.
+
+## Integration Steps
+
+### 1. Synchronize All Core System Transactions
+Any transactions that happen in your Core system must be synchronized with the Rock Loyalty System:
+- **After successful payment**: Call `POST /api/admin/credit-points-transactions` to award points
+- **sync** immediately after Core system processes the payment
+
+### 2. Synchronize Voucher Usage
+Vouchers must be synchronized between both systems:
+- **Before accepting voucher**: Call `GET /api/vouchers/{voucherCode}` to validate
+- **After using voucher**: Call `PUT /api/vouchers/{voucherCode}/use` to mark as used
+- **Both systems must reflect** the voucher status change
+
+### 3. User Management Integration
+All user management operations (registration, authentication, profile updates) are handled through API calls to the Main System:
+- User data synchronization between Rock Loyalty System and Main System
+- User profile updates to Main System
+",
+                });
+
                 // Get the path to the XML documentation file
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);

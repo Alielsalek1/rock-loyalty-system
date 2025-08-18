@@ -72,7 +72,7 @@ public class PasswordController(
     }
 
     /// <summary>
-    /// Updates the user's password.
+    /// Updates the user's password (Forget Password callback).
     /// </summary>
     /// <param name="token">The token used to validate the password update request.</param>
     /// <param name="requestBody">The request body containing the new password.</param>
@@ -107,6 +107,32 @@ public class PasswordController(
         return Ok(new { success = true, message = "Password updated" });
     }
 
+    /// <summary>
+    /// Updates the password for the authenticated user.
+    /// </summary>
+    /// <param name="requestBody">The request body containing the new password.</param>
+    /// <returns>An ActionResult indicating the result of the operation.</returns>
+    /// <remarks>
+    /// Sample request:
+    ///
+    ///     PUT /api/password
+    ///     {
+    ///         "password": "newpassword123"
+    ///     }
+    ///
+    /// Sample response:
+    ///
+    ///     200 OK
+    ///     {
+    ///         "success": true,
+    ///         "message": "Password updated"
+    ///     }
+    /// 
+    /// Authorization header with JWT Bearer token is required.
+    /// </remarks>
+    /// <response code="200">If the password is updated successfully.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="500">If any other exception occurs.</response>
     [HttpPut]
     [Route("")]
     [Authorize(Roles = "User")]

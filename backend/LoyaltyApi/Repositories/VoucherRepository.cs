@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace LoyaltyApi.Repositories
 {
     public class VoucherRepository(
-        FrontendDbContext dbContext,
+        RockDbContext dbContext,
         ApiUtility apiUtility,
         VoucherUtility voucherUtility,
         ILogger<VoucherRepository> logger) : IVoucherRepository

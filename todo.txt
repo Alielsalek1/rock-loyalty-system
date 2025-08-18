@@ -7,7 +7,7 @@ REFRESH TOKEN
 you should add a refreshToken when you create a user not when logging in (fix for confirmEmail and login)
 Implement the refreshToken part as it doesn't send anything to the frontend.
 
-Fix the Socket exhaustion
+user must confirm email before logining in to create a voucher
 receiptId must be unique when creating a transaction
 Adjust the date for the Spend (Voucher) to match to format for the Earn (points)
 update use doesn't follow the uniqueness constraint (doesn't matter because the user is here only for testing)

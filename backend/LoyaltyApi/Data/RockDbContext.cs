@@ -3,8 +3,24 @@ using LoyaltyApi.Models;
 
 namespace LoyaltyApi.Data
 {
-    public class RockDbContext(DbContextOptions<RockDbContext> dbContextOptions) : DbContext(dbContextOptions)
+    public class RockDbContext : DbContext
     {
+        public RockDbContext(DbContextOptions<RockDbContext> options) : base(options)
+        {
+        }
+
+        // Parameterless constructor for design-time migrations
+        public RockDbContext()
+        {
+        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                // Use the same SQLite connection string as in Startup.cs
+                optionsBuilder.UseSqlite("Data Source=DikaRockDbContext.db");
+            }
+        }
         public DbSet<Token> Tokens { get; set; }
 
         public DbSet<CreditPointsTransaction> CreditPointsTransactions { get; set; }

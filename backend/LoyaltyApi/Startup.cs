@@ -102,6 +102,7 @@ namespace LoyaltyApi
             services.AddScoped<VoucherUtility>();
             services.AddScoped<CreditPointsUtility>();
             services.AddScoped<TokenUtility>();
+            services.AddScoped<ParserUtility>();
             services.AddScoped<EmailService>();
             services.AddScoped<ICreditPointsTransactionDetailRepository, CreditPointsTransactionDetailRepository>();
             services.AddScoped<ICreditPointsTransactionRepository, CreditPointsTransactionRepository>();
@@ -142,7 +143,7 @@ namespace LoyaltyApi
                 Log.Logger.Information("Setting up SQLite database");
 
                 services.AddDbContext<RockDbContext>(options =>
-                    options.UseSqlite("Data Source=Dika.db"));
+                    options.UseSqlite("Data Source=DikaRockDbContext.db"));
 
                 Log.Logger.Information("Setting up SQLite database done");
             }
@@ -208,6 +209,32 @@ namespace LoyaltyApi
 
                 // Include the XML documentation in Swagger
                 options.IncludeXmlComments(xmlPath);
+
+                // Add JWT Bearer authentication to Swagger
+                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "Enter 'Bearer' [space] and then your valid token in the text input below.\n\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\""
+                });
+
+                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
             });
             services.AddCors(options =>
             {

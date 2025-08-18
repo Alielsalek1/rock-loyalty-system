@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace LoyaltyApi.Repositories;
 
 public class CreditPointsTransactionRepository(
-    FrontendDbContext dbContext,
+    RockDbContext dbContext,
     ILogger<CreditPointsTransactionRepository> logger) : ICreditPointsTransactionRepository
 {
     public async Task<CreditPointsTransaction?> GetTransactionByIdAsync(int transactionId)

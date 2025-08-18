@@ -16,7 +16,7 @@ using Sprache;
 namespace LoyaltyApi.Repositories
 {
     public class TokenRepository(
-        FrontendDbContext dbContext,
+        RockDbContext dbContext,
         IOptions<JwtOptions> jwtOptions,
         ILogger<TokenRepository> logger) : ITokenRepository
     {

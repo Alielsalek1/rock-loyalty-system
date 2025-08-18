@@ -1,3 +1,4 @@
+using LoyaltyApi.Exceptions;
 using LoyaltyApi.Models;
 using LoyaltyApi.Repositories;
 using LoyaltyApi.RequestModels;
@@ -61,6 +62,10 @@ namespace LoyaltyApi.Services
         public async Task CreateRestaurant(CreateRestaurantRequestModel createRestaurant)
         {
             logger.LogInformation("Creating restaurant with id {restaurantId}", createRestaurant.RestaurantId);
+
+            if (await repository.GetRestaurantById(createRestaurant.RestaurantId) != null)
+                throw new AlreadyExistsException("Restaurant already exists");
+
             Restaurant restaurant = new()
             {
                 RestaurantId = createRestaurant.RestaurantId,

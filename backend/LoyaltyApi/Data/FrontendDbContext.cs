@@ -9,22 +9,22 @@ namespace LoyaltyApi.Data
 {
     public class FrontendDbContext : DbContext
     {
-        public FrontendDbContext(DbContextOptions<FrontendDbContext> options) : base(options)
-        {
-        }
+        // public FrontendDbContext(DbContextOptions<FrontendDbContext> options) : base(options)
+        // {
+        // }
 
-        // Parameterless constructor for design-time migrations
-        public FrontendDbContext()
-        {
-        }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                // Use the same SQLite connection string as in Startup.cs
-                optionsBuilder.UseSqlite("Data Source=DikaFrontend.db");
-            }
-        }
+        // // Parameterless constructor for design-time migrations
+        // public FrontendDbContext()
+        // {
+        // }
+        // protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        // {
+        //     if (!optionsBuilder.IsConfigured)
+        //     {
+        //         // Use the same SQLite connection string as in Startup.cs
+        //         optionsBuilder.UseSqlite("Data Source=DikaFrontend.db");
+        //     }
+        // }
         public DbSet<Token> Tokens { get; set; }
 
         public DbSet<CreditPointsTransaction> CreditPointsTransactions { get; set; }

@@ -13,7 +13,7 @@ public class CreditPointsTransactionService(
     ICreditPointsTransactionRepository transactionRepository,
     ICreditPointsTransactionDetailRepository transactionDetailRepository,
     IRestaurantRepository restaurantRepository,
-    FrontendDbContext context,
+    RockDbContext context,
     IHttpContextAccessor httpContext,
     CreditPointsUtility creditPointsUtility,
     ILogger<CreditPointsTransactionService> logger) : ICreditPointsTransactionService
@@ -80,6 +80,7 @@ public class CreditPointsTransactionService(
 
         var restaurant = await restaurantRepository.GetRestaurantById(transactionRequest.RestaurantId) ??
                          throw new ArgumentException("Invalid restaurant");
+
 
         var pointsEarned = creditPointsUtility.CalculateCreditPoints(transactionRequest.Amount,
                 restaurant.CreditPointsBuyingRate);

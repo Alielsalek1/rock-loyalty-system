@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LoyaltyApi.Repositories
 {
-    public class PasswordRepository(FrontendDbContext dbContext,
+    public class PasswordRepository(RockDbContext dbContext,
     ILogger<PasswordRepository> logger) : IPasswordRepository
     {
         public async Task<Password> CreatePasswordAsync(Password password)

@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using LoyaltyApi.Exceptions;
 using LoyaltyApi.Models;
 using LoyaltyApi.Repositories;
 using LoyaltyApi.RequestModels;
@@ -65,12 +66,17 @@ namespace LoyaltyApi.Services
 
         public async Task<User> UpdateUserAsync(UpdateUserRequestModel requestModel, int userId, int restaurantId)
         {
+            logger.LogInformation("getting user with id {userId} and restaurantId {restaurantId}", userId, restaurantId);
+
+            User? pastUser = await userRepository.GetUserAsync(new User { Id = userId, RestaurantId = restaurantId })
+                ?? throw new NotFoundException("User not found");
+
             logger.LogInformation("Updating user {Name}", requestModel.Name);
             User user = new()
             {
-                Name = requestModel.Name,
-                Email = requestModel.Email,
-                PhoneNumber = requestModel.PhoneNumber,
+                Name = requestModel.Name ?? pastUser.Name,
+                Email = requestModel.Email ?? pastUser.Email,
+                PhoneNumber = requestModel.PhoneNumber ?? pastUser.PhoneNumber,
                 Id = userId,
                 RestaurantId = restaurantId
             };

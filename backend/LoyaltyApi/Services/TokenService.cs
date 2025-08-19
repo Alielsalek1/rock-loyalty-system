@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace LoyaltyApi.Services
 {
     public class TokenService(ITokenRepository repository,
-    ILogger<TokenService> logger, IConfiguration configuration) : ITokenService
+    ILogger<TokenService> logger) : ITokenService
     {
         public async Task<string> GenerateAccessTokenAsync(int customerId, int restaurantId, Role role)
         {
@@ -81,7 +81,7 @@ namespace LoyaltyApi.Services
             return (accessTokenValue, refreshTokenValue);
         }
 
-        public async Task<string> GenerateForgotPasswordTokenAsync(int customerId, int restaurantId)
+        public string GenerateForgotPasswordToken(int customerId, int restaurantId)
         {
             logger.LogInformation("Generating forgot password token for customer {customerId} and restaurant {restaurantId}", customerId, restaurantId);
             Token token = new()
@@ -90,10 +90,10 @@ namespace LoyaltyApi.Services
                 RestaurantId = restaurantId,
                 TokenType = TokenType.ForgotPasswordToken,
             };
-            return await repository.GenerateForgotPasswordTokenAsync(token);
+            return repository.GenerateForgotPasswordToken(token);
         }
 
-        public async Task<string> GenerateConfirmEmailTokenAsync(int customerId, int restaurantId)
+        public string GenerateConfirmEmailToken(int customerId, int restaurantId)
         {
             logger.LogInformation("Generating confirm email token for customer {customerId} and restaurant {restaurantId}", customerId, restaurantId);
             Token token = new()
@@ -102,7 +102,7 @@ namespace LoyaltyApi.Services
                 RestaurantId = restaurantId,
                 TokenType = TokenType.ConfirmEmail,
             };
-            return await repository.GenerateConfirmEmailTokenAsync(token);
+            return repository.GenerateConfirmEmailToken(token);
         }
 
         public async Task<bool> ValidateConfirmEmailTokenAsync(string token)

@@ -29,7 +29,7 @@ namespace LoyaltyApi.Repositories
         private void StoreTokenInCache(Token token, TimeSpan? expiration = null)
         {
             var cacheKey = tokenUtility.GetCacheKey(token.TokenType, token.CustomerId, token.RestaurantId);
-            var cacheExpiration = expiration ?? TimeSpan.FromMinutes(30);
+            var cacheExpiration = expiration ?? TimeSpan.FromMinutes(360);
             memoryCache.Set(cacheKey, token, cacheExpiration);
 
             logger.LogInformation("Stored {TokenType} token in cache with key: {CacheKey}",
@@ -48,7 +48,7 @@ namespace LoyaltyApi.Repositories
         }
 
         // Generic method for memory-cached token generation
-        private async Task<string> GenerateMemoryCachedTokenAsync(Token token)
+        private string GenerateMemoryCachedToken(Token token)
         {
             JwtSecurityToken generatedToken = GenerateToken(token);
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -198,14 +198,14 @@ namespace LoyaltyApi.Repositories
         }
 
         // Updated methods using memory cache
-        public async Task<string> GenerateForgotPasswordTokenAsync(Token token)
+        public string GenerateForgotPasswordToken(Token token)
         {
-            return await GenerateMemoryCachedTokenAsync(token);
+            return GenerateMemoryCachedToken(token);
         }
 
-        public async Task<string> GenerateConfirmEmailTokenAsync(Token token)
+        public string GenerateConfirmEmailToken(Token token)
         {
-            return await GenerateMemoryCachedTokenAsync(token);
+            return GenerateMemoryCachedToken(token);
         }
 
         public async Task<bool> ValidateConfirmEmailTokenAsync(Token token)
@@ -219,7 +219,7 @@ namespace LoyaltyApi.Repositories
         }
 
         // Debug methods for cache inspection
-        public async Task<bool> IsCacheContainsTokenAsync(TokenType tokenType, int customerId, int restaurantId)
+        public bool IsCacheContainsToken(TokenType tokenType, int customerId, int restaurantId)
         {
             var cacheKey = tokenUtility.GetCacheKey(tokenType, customerId, restaurantId);
             var exists = memoryCache.TryGetValue(cacheKey, out _);
@@ -230,7 +230,7 @@ namespace LoyaltyApi.Repositories
             return exists;
         }
 
-        public async Task<Token?> GetCachedTokenForInspectionAsync(TokenType tokenType, int customerId, int restaurantId)
+        public Token? GetCachedTokenForInspection(TokenType tokenType, int customerId, int restaurantId)
         {
             var cachedToken = GetTokenFromCache(tokenType, customerId, restaurantId);
 
@@ -243,5 +243,7 @@ namespace LoyaltyApi.Repositories
 
             return cachedToken;
         }
+
+
     }
 }

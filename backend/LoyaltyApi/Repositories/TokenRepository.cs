@@ -29,7 +29,7 @@ namespace LoyaltyApi.Repositories
         private void StoreTokenInCache(Token token, TimeSpan? expiration = null)
         {
             var cacheKey = tokenUtility.GetCacheKey(token.TokenType, token.CustomerId, token.RestaurantId);
-            var cacheExpiration = expiration ?? TimeSpan.FromMinutes(360);
+            var cacheExpiration = expiration ?? TimeSpan.FromMinutes(10);
             memoryCache.Set(cacheKey, token, cacheExpiration);
 
             logger.LogInformation("Stored {TokenType} token in cache with key: {CacheKey}",

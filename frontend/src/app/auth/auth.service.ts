@@ -272,4 +272,44 @@ export class AuthService {
     this.user.next(user);
     localStorage.setItem('userInfo' + this.restaurantId, JSON.stringify(user));
   }
+
+  // admin services
+
+  adminLogin(email: string, password: string) {
+    return this.http
+      .post<UserInterface>(`${environment.apiUrl}/api/admin/login`, {
+        email: email,
+        password: password,
+        restaurantId: this.restaurantId,
+      })
+      .pipe(
+        catchError((errorResponse: HttpErrorResponse) => {
+          console.log(errorResponse);
+          return throwError(() => {
+            return new Error(errorResponse.error.message);
+          });
+        }),
+        tap((userInfo) => {
+          const email = userInfo.data.user.email;
+          const name = userInfo.data.user.name;
+          const phoneNumber = userInfo.data.user.phoneNumber;
+          const id = userInfo.data.user.id;
+          this.authenticationHandler(
+            email,
+            name,
+            phoneNumber,
+            id,
+            userInfo.data.accessToken
+          );
+        })
+      );
+  }
+
+  onAdminLogOut() {
+    this.user.next(null);
+    localStorage.removeItem('userInfo' + this.restaurantId);
+    this.router.navigate([this.restaurantId, 'admin', 'login']);
+  }
 }
+
+

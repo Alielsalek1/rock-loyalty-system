@@ -3,9 +3,7 @@
 }
 
 <div class="container">
-  <div
-    class="row mx-2 flex-column gap-4 main-page align-items-center justify-content-center"
-  >
+  <div class="row mx-2 flex-column gap-4 main-page align-items-center justify-content-center">
     <div class="col-lg-5 col-md-6 col-12 partition-shadow rounded-4 p-4">
       <h2 class="text-center d-flex justify-content-between align-items-center">
         <div class=""><i class="bi bi-currency-exchange"></i> Balance</div>
@@ -21,32 +19,16 @@
           <div class="d-flex align-items-center gap-3">
             <div class="w-100">
               <label for="form-label">points</label>
-              <input
-                type="number"
-                class="form-control"
-                name="from"
-                id=""
-                aria-describedby="helpId"
-                placeholder="0"
-                [(ngModel)]="from"
-                (input)="fromTyping()"
-              />
+              <input type="number" class="form-control" name="from" id="" aria-describedby="helpId" placeholder="0"
+                [(ngModel)]="from" (input)="fromTyping()" />
             </div>
 
             <i class="bi bi-arrow-left-right mt-4"></i>
 
             <div class="w-100">
               <label for="form-label">egp</label>
-              <input
-                type="number"
-                class="form-control"
-                name="to"
-                id=""
-                [(ngModel)]="to"
-                aria-describedby="helpId"
-                placeholder="0"
-                (input)="toTyping()"
-              />
+              <input type="number" class="form-control" name="to" id="" [(ngModel)]="to" aria-describedby="helpId"
+                placeholder="0" (input)="toTyping()" />
             </div>
           </div>
         </div>
@@ -82,11 +64,7 @@
         {{ lifeTime }} minutes <br />
         after creating the voucher
       </div>
-      <button
-        class="btn btn-primary w-100"
-        (click)="onSubmit()"
-        [disabled]="!valid"
-      >
+      <button class="btn btn-primary w-100" (click)="onSubmit()" [disabled]="!valid">
         Submit
       </button>
     </div>

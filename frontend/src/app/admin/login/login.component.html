@@ -1,0 +1,77 @@
+@if ( loading ) {
+    <app-alert [message]="loadingMessage"></app-alert>
+    }
+
+<div class="container">
+    <div class="row vh-100 align-items-center">
+      <form
+        ngForm
+        #loginForm="ngForm"
+        class="col-lg-6 col-md-8 col-sm-10 col-12 offset-sm-1 offset-md-2 offset-lg-3"
+        (ngSubmit)="onSubmit()"
+      >
+        <h1 class="text-center mb-3" style="font-weight: 800">Admin Login</h1>
+        
+        <!-- Email Input -->
+        <div class="mb-3">
+          <input
+            type="email"
+            class="form-control"
+            name="email"
+            id="emailInput"
+            #emailInput="ngModel"
+            ngModel
+            required
+            email
+            aria-describedby="emailHelpId"
+            placeholder="Enter your email"
+            [ngClass]="{
+              'is-invalid': !emailInput.valid && emailInput.touched
+            }"
+          />
+          <div
+            *ngIf="emailInput.invalid && emailInput.touched"
+            class="invalid-feedback"
+          >
+            @if (emailInput.errors?.required) {
+            <div>Email is required</div>
+            } @if (emailInput.errors?.email) {
+            <div>Please enter a valid email address</div>
+            }
+          </div>
+        </div>
+  
+        <!-- Password Input -->
+        <div class="mb-3">
+          <input
+            type="password"
+            class="form-control"
+            #passwordInput="ngModel"
+            ngModel
+            placeholder="Enter your password"
+            name="password"
+            required
+            minlength="8"
+            [ngClass]="{
+              'is-invalid': !passwordInput.valid && passwordInput.touched
+            }"
+          />
+          <div
+            *ngIf="passwordInput.invalid && passwordInput.touched"
+            class="invalid-feedback"
+          >
+            @if (passwordInput.errors?.required) {
+            <div>Password is required</div>
+            } @if (passwordInput.errors?.minlength) {
+            <div>Password must be at least 8 characters long</div>
+            }
+          </div>
+        </div>
+  
+        <!-- Submit Button -->
+        <button class="btn btn-primary w-100 mb-1" [disabled]="!loginForm.valid">
+          Login
+        </button>
+      </form>
+    </div>
+  </div>

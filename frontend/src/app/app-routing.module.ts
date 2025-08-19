@@ -19,6 +19,15 @@ import { VouchersComponent } from './main/vouchers/vouchers.component';
 import { ProfileComponent } from './main/profile/profile.component';
 import { AppComponent } from './app.component';
 
+// admin component
+import { AdminComponent } from './admin/admin.component';
+import { AdminLoginComponent } from './admin/login/login.component';
+import { RestaurantComponent } from './admin/restaurant/restaurant.component';
+import { GetUserComponent } from './admin/get-user/get-user.component';
+import { MakeVouchersComponent } from './admin/make-vouchers/make-vouchers.component';
+import { flush } from '@angular/core/testing';
+
+
 const routes: Routes = [
   {
     path: ':restId',
@@ -95,6 +104,43 @@ const routes: Routes = [
           },
         ],
       },
+      {
+        path: 'admin',
+        children: [
+          {
+            path: '',
+            redirectTo: 'login',
+            pathMatch: 'full',
+          },
+          {
+            path: 'login',
+            component: AdminLoginComponent, 
+          },
+          {
+            path: 'main',
+            component: AdminComponent, 
+            children: [
+              {
+                path: '',
+                redirectTo: 'restaurant',
+                pathMatch: 'full',
+              },
+              {
+                path: 'restaurant',
+                component: RestaurantComponent,
+              },
+              {
+                path: 'getUser',
+                component: GetUserComponent,
+              },
+              {
+                path: 'makeVouchers',
+                component: MakeVouchersComponent,
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -107,4 +153,4 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

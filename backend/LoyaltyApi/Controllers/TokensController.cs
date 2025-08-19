@@ -4,6 +4,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using LoyaltyApi.Config;
+using LoyaltyApi.Models;
+using LoyaltyApi.Repositories;
 using LoyaltyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +21,8 @@ namespace LoyaltyApi.Controllers;
 public class TokensController(
     ITokenService tokenService,
     IOptions<JwtOptions> jwtOptions,
-    ILogger<TokensController> logger) : ControllerBase
+    ILogger<TokensController> logger,
+    ITokenRepository tokenRepository) : ControllerBase
 {
     /// <summary>
     /// Refreshes the access and refresh tokens.
@@ -74,5 +77,21 @@ public class TokensController(
             message = "Tokens refreshed",
             data = new { accessToken }
         });
+    }
+    //TODO:Testing shit don't bother me
+    [HttpGet("debug/cache-tokens/{customerId}/{restaurantId}")]
+    public async Task<IActionResult> GenerateConfirmEmailToken(int customerId, int restaurantId)
+    {
+        var token = new Token
+        {
+            CustomerId = customerId,
+            RestaurantId = restaurantId,
+            TokenType = TokenType.ConfirmEmail,
+            Role = Role.User
+        };
+
+        var tokenValue = await tokenRepository.GenerateConfirmEmailTokenAsync(token);
+
+        return Ok(new { TokenValue = tokenValue });
     }
 }

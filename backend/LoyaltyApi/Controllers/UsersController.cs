@@ -82,7 +82,7 @@ public class UsersController(
             return BadRequest(new { success = false, message = "Password is required" });
 
         if (existingUser is not null)
-                return BadRequest(new { success = false, message = "User already exists" });
+            return BadRequest(new { success = false, message = "User already exists" });
 
         User? user = await userService.CreateUserAsync(requestBody);
 
@@ -269,7 +269,7 @@ public class UsersController(
 
         User user = await userService.UpdateUserAsync(requestBody, userId, restaurantId);
         if (user == null) return NotFound(new { success = false, message = "User not found" });
-        
+
         return Ok(new
         {
             success = true,
@@ -301,4 +301,5 @@ public class UsersController(
             data = new { user }
         });
     }
+
 }

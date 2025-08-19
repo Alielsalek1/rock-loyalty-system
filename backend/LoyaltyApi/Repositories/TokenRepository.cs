@@ -11,15 +11,87 @@ using LoyaltyApi.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Caching.Memory; // Add this using
 using Sprache;
+using LoyaltyApi.Utilities;
 
 namespace LoyaltyApi.Repositories
 {
     public class TokenRepository(
         FrontendDbContext dbContext,
         IOptions<JwtOptions> jwtOptions,
+        IMemoryCache memoryCache,
+        TokenUtility tokenUtility,
         ILogger<TokenRepository> logger) : ITokenRepository
     {
+
+
+        private void StoreTokenInCache(Token token, TimeSpan? expiration = null)
+        {
+            var cacheKey = tokenUtility.GetCacheKey(token.TokenType, token.CustomerId, token.RestaurantId);
+            var cacheExpiration = expiration ?? TimeSpan.FromMinutes(30);
+            memoryCache.Set(cacheKey, token, cacheExpiration);
+
+            logger.LogInformation("Stored {TokenType} token in cache with key: {CacheKey}",
+                token.TokenType, cacheKey);
+        }
+
+        private Token? GetTokenFromCache(TokenType tokenType, int customerId, int restaurantId)
+        {
+            var cacheKey = tokenUtility.GetCacheKey(tokenType, customerId, restaurantId);
+            var exists = memoryCache.TryGetValue(cacheKey, out Token? cachedToken);
+
+            logger.LogInformation("Cache lookup for key {CacheKey}: {Found}",
+                cacheKey, exists ? "Found" : "Not Found");
+
+            return exists ? cachedToken : null;
+        }
+
+        // Generic method for memory-cached token generation
+        private async Task<string> GenerateMemoryCachedTokenAsync(Token token)
+        {
+            JwtSecurityToken generatedToken = GenerateToken(token);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            string valueToken = tokenHandler.WriteToken(generatedToken);
+
+            var jwtToken = tokenHandler.ReadJwtToken(valueToken);
+            int subject = int.Parse(jwtToken.Claims.First(c => c.Type == "sub").Value);
+            int restaurantId = int.Parse(jwtToken.Claims.First(c => c.Type == "restaurantId").Value);
+
+            var tokenToStore = new Token
+            {
+                TokenValue = valueToken,
+                CustomerId = subject,
+                RestaurantId = restaurantId,
+                TokenType = token.TokenType
+            };
+
+            // Store in memory cache instead of database
+            StoreTokenInCache(tokenToStore);
+
+            logger.LogInformation(
+                "Generated {TokenType} token for customer {CustomerId} and restaurant {RestaurantId}",
+                token.TokenType, subject, restaurantId);
+
+            return valueToken;
+        }
+
+        // Generic method for memory-cached token validation
+        private async Task<bool> ValidateMemoryCachedTokenAsync(Token token)
+        {
+            logger.LogInformation(
+                "Validating {TokenType} token for customer {CustomerId} and restaurant {RestaurantId}",
+                token.TokenType, token.CustomerId, token.RestaurantId);
+
+            // First validate JWT structure and expiration
+            var isTokenValid = await ValidateTokenAsync(token);
+            if (!isTokenValid) return false;
+
+            // Check memory cache
+            var cachedToken = GetTokenFromCache(token.TokenType, token.CustomerId, token.RestaurantId);
+            return cachedToken?.TokenValue == token.TokenValue;
+        }
+
         public async Task<string> GenerateAccessTokenAsync(Token token)
         {
             JwtSecurityToken generatedToken = GenerateToken(token);
@@ -59,7 +131,7 @@ namespace LoyaltyApi.Repositories
             var tokenExistsInDb = await dbContext.Tokens.AnyAsync(t =>
                 t.CustomerId == token.CustomerId && t.RestaurantId == token.RestaurantId &&
                 t.TokenValue == token.TokenValue && t.TokenType == TokenType.RefreshToken);
-            
+
             return isTokenValid && tokenExistsInDb;
         }
 
@@ -125,78 +197,51 @@ namespace LoyaltyApi.Repositories
             return refreshToken.TokenValue;
         }
 
+        // Updated methods using memory cache
         public async Task<string> GenerateForgotPasswordTokenAsync(Token token)
         {
-            JwtSecurityToken generatedToken = GenerateToken(token);
-            var tokenHandler = new JwtSecurityTokenHandler();
-            string valueToken = tokenHandler.WriteToken(generatedToken).ToString();
-            int subject = int.Parse(tokenHandler.ReadJwtToken(valueToken).Claims.First(claim => claim.Type == "sub")
-                .Value);
-            DateTime expiration = tokenHandler.ReadJwtToken(valueToken).ValidTo;
-            int restaurantId = int.Parse(tokenHandler.ReadJwtToken(valueToken).Claims
-                .First(claim => claim.Type == "restaurantId").Value);
-            var forgotPasswordToken = new Token
-            {
-                TokenValue = valueToken,
-                CustomerId = subject,
-                RestaurantId = restaurantId,
-                TokenType = TokenType.ForgotPasswordToken
-            };
-            await dbContext.Tokens.AddAsync(forgotPasswordToken);
-            await dbContext.SaveChangesAsync();
-            logger.LogInformation(
-                "Generated forgot password token for customer {CustomerId} and restaurant {RestaurantId}",
-                token.CustomerId, token.RestaurantId);
-            return forgotPasswordToken.TokenValue;
+            return await GenerateMemoryCachedTokenAsync(token);
         }
 
         public async Task<string> GenerateConfirmEmailTokenAsync(Token token)
         {
-            JwtSecurityToken generatedToken = GenerateToken(token);
-            var tokenHandler = new JwtSecurityTokenHandler();
-            string valueToken = tokenHandler.WriteToken(generatedToken).ToString();
-            int subject = int.Parse(tokenHandler.ReadJwtToken(valueToken).Claims.First(claim => claim.Type == "sub")
-                .Value);
-            DateTime expiration = tokenHandler.ReadJwtToken(valueToken).ValidTo;
-            int restaurantId = int.Parse(tokenHandler.ReadJwtToken(valueToken).Claims
-                .First(claim => claim.Type == "restaurantId").Value);
-            var confirmEmailToken = new Token
-            {
-                TokenValue = valueToken,
-                CustomerId = subject,
-                RestaurantId = restaurantId,
-                TokenType = TokenType.ConfirmEmail
-            };
-            await dbContext.Tokens.AddAsync(confirmEmailToken);
-            await dbContext.SaveChangesAsync();
-            logger.LogInformation(
-                "Generated confirm email token for customer {CustomerId} and restaurant {RestaurantId}",
-                token.CustomerId, token.RestaurantId);
-            return confirmEmailToken.TokenValue;
+            return await GenerateMemoryCachedTokenAsync(token);
         }
 
         public async Task<bool> ValidateConfirmEmailTokenAsync(Token token)
         {
-            logger.LogInformation(
-                "Validating confirm email token for customer {CustomerId} and restaurant {RestaurantId}",
-                token.CustomerId, token.RestaurantId);
-            var isTokenValid = await ValidateTokenAsync(token);
-            var tokenExistsInDb = await dbContext.Tokens.AnyAsync(t =>
-                t.TokenValue == token.TokenValue && t.TokenType == TokenType.ConfirmEmail);
-            
-            return isTokenValid && tokenExistsInDb;
+            return await ValidateMemoryCachedTokenAsync(token);
         }
 
         public async Task<bool> ValidateForgotPasswordTokenAsync(Token token)
         {
-            logger.LogInformation(
-                "Validating forgot password token for customer {CustomerId} and restaurant {RestaurantId}",
-                token.CustomerId, token.RestaurantId);
-            var isTokenValid = await ValidateTokenAsync(token);
-            var tokenExistsInDb = await dbContext.Tokens.AnyAsync(t =>
-                t.TokenValue == token.TokenValue && t.TokenType == TokenType.ForgotPasswordToken);
-            
-            return isTokenValid && tokenExistsInDb;
+            return await ValidateMemoryCachedTokenAsync(token);
+        }
+
+        // Debug methods for cache inspection
+        public async Task<bool> IsCacheContainsTokenAsync(TokenType tokenType, int customerId, int restaurantId)
+        {
+            var cacheKey = tokenUtility.GetCacheKey(tokenType, customerId, restaurantId);
+            var exists = memoryCache.TryGetValue(cacheKey, out _);
+
+            logger.LogInformation("Cache check for {TokenType}: Key={CacheKey}, Exists={Exists}",
+                tokenType, cacheKey, exists);
+
+            return exists;
+        }
+
+        public async Task<Token?> GetCachedTokenForInspectionAsync(TokenType tokenType, int customerId, int restaurantId)
+        {
+            var cachedToken = GetTokenFromCache(tokenType, customerId, restaurantId);
+
+            if (cachedToken != null)
+            {
+                logger.LogInformation("Found cached token: Type={TokenType}, CustomerId={CustomerId}, RestaurantId={RestaurantId}, TokenValue={TokenPreview}...",
+                    cachedToken.TokenType, cachedToken.CustomerId, cachedToken.RestaurantId,
+                    cachedToken.TokenValue[..Math.Min(20, cachedToken.TokenValue.Length)]); // First 20 characters or less
+            }
+
+            return cachedToken;
         }
     }
 }

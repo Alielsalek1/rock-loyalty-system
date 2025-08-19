@@ -29,6 +29,7 @@ namespace LoyaltyApi
             Log.Logger.Information("Setting configurations");
 
             services.AddHttpContextAccessor();
+            services.AddMemoryCache();
             services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
             services.Configure<FacebookOptions>(configuration.GetSection("FacebookOptions"));
             services.Configure<Config.GoogleOptions>(configuration.GetSection("GoogleOptions"));

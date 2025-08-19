@@ -1,0 +1,144 @@
+@if (loading) {
+    <app-alert [message]="'Loading restaurant data...'"></app-alert>
+    }
+    
+    <div class="container-fluid p-4" id="main-container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 col-12">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title mb-0 header-title">Restaurant <b>Details</b></h2>
+            </div>
+            <div class="card-body">
+              @if (restaurant) {
+              <form #restaurantForm="ngForm">
+                <!-- Read-only fields -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Restaurant ID</label>
+                    <input 
+                      type="text" 
+                      class="form-control" 
+                      [value]="restaurant.restaurantId" 
+                      readonly
+                    >
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Loyalty Points Buying Rate</label>
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      [value]="restaurant.loyaltyPointsBuyingRate" 
+                      readonly
+                    >
+                  </div>
+                </div>
+    
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Loyalty Points Selling Rate</label>
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      [value]="restaurant.loyaltyPointsSellingRate" 
+                      readonly
+                    >
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Loyalty Points Lifetime (days)</label>
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      [value]="restaurant.loyaltyPointsLifeTime" 
+                      readonly
+                    >
+                  </div>
+                </div>
+    
+                <hr>
+                <h3 class="header-title card-header" id="options"><b>Restaurant</b> Options</h3>
+    
+                <!-- Editable fields -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Credit Points Buying Rate</label>
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      [(ngModel)]="formData.creditPointsBuyingRate"
+                      name="creditPointsBuyingRate"
+                      required
+                      min="0"
+                    >
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Credit Points Selling Rate</label>
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      [(ngModel)]="formData.creditPointsSellingRate"
+                      name="creditPointsSellingRate"
+                      required
+                      min="0"
+                    >
+                  </div>
+                </div>
+    
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Credit Points Lifetime (days)</label>
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      [(ngModel)]="formData.creditPointsLifeTime"
+                      name="creditPointsLifeTime"
+                      required
+                      min="1"
+                    >
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Voucher Lifetime (days)</label>
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      [(ngModel)]="formData.voucherLifeTime"
+                      name="voucherLifeTime"
+                      required
+                      min="1"
+                    >
+                  </div>
+                </div>
+    
+                <div class="d-flex gap-2 save-container">
+                  <button 
+                    type="button" 
+                    class="btn btn-primary" 
+                    id="save-button"
+                    [disabled]="!hasChanges || saving || !restaurantForm.valid"
+                    (click)="onSave()"
+                  >
+                    @if (saving) {
+                      <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    Save Changes
+                  </button>
+                  
+                  <button 
+                    type="button" 
+                    class="btn btn-secondary" 
+                    id="reset-button"
+                    [disabled]="!hasChanges || saving"
+                    (click)="onReset()"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </form>
+              } @else {
+              <p class="text-muted">No restaurant data available</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

@@ -1,0 +1,59 @@
+<!-- Desktop Sidebar -->
+<nav class="sidebar d-none d-md-block">
+    <div class="nav flex-column">
+        <a class="nav-link" [routerLink]="['/', restaurantId, 'admin', 'main', 'restaurant']" routerLinkActive="active">
+            <div class="vertical">
+                <i class="bi bi-shop"></i>
+                <span>restaurant</span>
+            </div>
+        </a>
+        <a class="nav-link" [routerLink]="['/', restaurantId, 'admin', 'main', 'getUser']" routerLinkActive="active">
+            <div class="vertical">
+                <i class="bi bi-person-circle"></i>
+                <span>Users</span>
+            </div>
+        </a>
+        <a class="nav-link" [routerLink]="['/', restaurantId, 'admin', 'main', 'makeVouchers']" routerLinkActive="active">
+            <div class="vertical">
+                <i class="bi bi-gift"></i>
+                <span>Vouchers</span>
+            </div>
+        </a>
+        <a class="nav-link" (click)="onLogOut()">
+            <div class="vertical">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </div>
+        </a>
+    </div>
+</nav>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="bottom-navbar d-md-none fixed-bottom">
+    <div class="nav nav-pills nav-fill">
+        <a class="nav-link" [routerLink]="['/', restaurantId, 'admin', 'main', 'restaurant']" routerLinkActive="active">
+            <div class="vertical">
+                <i class="bi bi-shop"></i>
+                <span>Home</span>
+            </div>
+        </a>
+        <a class="nav-link" [routerLink]="['/', restaurantId, 'admin', 'main', 'getUser']" routerLinkActive="active">
+            <div class="vertical">
+                <i class="bi bi-person-circle"></i>
+                <span>Users</span>
+            </div>
+        </a>
+        <a class="nav-link" [routerLink]="['/', restaurantId, 'admin', 'main', 'makeVouchers']" routerLinkActive="active">
+            <div class="vertical">
+                <i class="bi bi-gift"></i>
+                <span>Vouchers</span>
+            </div>
+        </a>
+        <a class="nav-link" (click)="onLogOut()">
+            <div class="vertical">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Logout</span>
+            </div>
+        </a>
+    </div>
+</nav>

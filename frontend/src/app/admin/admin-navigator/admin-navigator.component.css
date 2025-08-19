@@ -1,0 +1,85 @@
+.vertical {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Desktop Sidebar */
+.sidebar {
+    background-color: rgba(33, 37, 41, 1);
+    max-width: 100px;
+    padding: 10px;
+    height: 100vh;
+    padding-top: 1rem;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+}
+
+.sidebar .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #adb5bd;
+    padding: 1rem 0;
+    width: 100%;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.sidebar .nav-link span {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.sidebar .nav-link i {
+    font-size: 1.5rem;
+}
+
+.sidebar .nav-link:hover {
+    color: #007bff;
+}
+
+.sidebar .nav-link.active {
+    color: #007bff;
+}
+
+/* Mobile Bottom Navigation */
+.bottom-navbar {
+    background-color: rgba(33, 37, 41, 1);
+    z-index: 999;
+    padding: 0.5rem 0;
+}
+
+.bottom-navbar .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #adb5bd;
+    text-decoration: none;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.bottom-navbar .nav-link i {
+    font-size: 1.5rem;
+}
+
+.bottom-navbar .nav-link span {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.bottom-navbar .nav-link:hover {
+    color: #007bff ;
+    background-color: transparent ;
+}
+
+.bottom-navbar .nav-link.active {
+    color: #007bff ;
+    background-color: transparent;
+}
+
+

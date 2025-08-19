@@ -22,12 +22,7 @@ namespace LoyaltyApi.Models
 
         public DateTime TransactionDate { get; set; } = DateTime.Now;
 
-        // Fields to replace CreditPointsTransactionDetail functionality
-        public int? EarnTransactionId { get; set; } // For spend/expire transactions: which earn transaction they're using
-        public int RemainingPoints { get; set; } = 0; // For earn transactions: how many points are still available
-
         // Navigation properties
-        // Commented out to remove transaction details dependency
-        // public ICollection<CreditPointsTransactionDetail> CreditPointsTransactionDetails { get; set; }
+        public ICollection<CreditPointsTransactionDetail> CreditPointsTransactionDetails { get; set; }
     }
 }

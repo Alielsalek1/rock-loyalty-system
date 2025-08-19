@@ -1,0 +1,13 @@
+/* Ensure content doesn't overlap with sidebar on desktop */
+@media (min-width: 768px) {
+    .content-area {
+        margin-left: 80px;
+    }
+}
+
+/* Ensure content doesn't overlap with bottom nav on mobile */
+@media (max-width: 767px) {
+    .content-area {
+        padding-bottom: 80px;
+    }
+}

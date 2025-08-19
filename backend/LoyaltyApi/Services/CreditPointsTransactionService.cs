@@ -124,7 +124,7 @@ public class CreditPointsTransactionService(
 
             // Check if there are enough points before proceeding
             var totalAvailablePoints = transactions.Sum(t => t.Points);
-            
+
             if (totalAvailablePoints < points)
             {
                 throw new PointsNotEnoughException("Not enough points");
@@ -145,17 +145,21 @@ public class CreditPointsTransactionService(
             await context.SaveChangesAsync();
 
             // Distribute the points to spend across available transactions
-            foreach (var transaction in transactions
-                         .Where(transaction =>
-                            transaction.TransactionDate > DateTime.Now.AddDays(-restaurant.CreditPointsLifeTime) &&
-                            transaction.TransactionType == TransactionType.Earn)
-                         .OrderBy(t => t.TransactionDate))
+            var earnTransactions = transactions
+                .Where(transaction =>
+                    transaction.TransactionDate > DateTime.Now.AddDays(-restaurant.CreditPointsLifeTime) &&
+                    transaction.TransactionType == TransactionType.Earn)
+                .OrderBy(t => t.TransactionDate)
+                .ToList();
+
+            var earnTransactionIds = earnTransactions.Select(t => t.TransactionId).ToList();
+            var spentPointsLookup = await transactionDetailRepository.GetTotalPointsSpentForMultipleEarnTransactions(earnTransactionIds);
+
+            foreach (var transaction in earnTransactions)
             {
                 if (remainingPoints <= 0) break;
 
-                var spentPoints =
-                    await transactionDetailRepository.GetTotalPointsSpentForEarnTransaction(transaction.TransactionId);
-
+                var spentPoints = spentPointsLookup.GetValueOrDefault(transaction.TransactionId, 0);
                 var availablePoints = transaction.Points - spentPoints;
 
                 if (availablePoints <= 0) continue;
@@ -233,7 +237,7 @@ public class CreditPointsTransactionService(
             // var currentDateTime = DateTime.Now;
             // Fetch all transactions that have expired based on the restaurant's lifetime
 
-            var currentDateTime = DateTime.Now.AddHours(23).AddMinutes(53); // for testing
+            var currentDateTime = DateTime.Now;
             var expiredTransactions =
                 await transactionRepository.GetExpiredTransactionsByCustomerAndRestaurantAsync(restaurant, user.Id, currentDateTime);
 
@@ -247,12 +251,15 @@ public class CreditPointsTransactionService(
             // Create lists to hold new expiration transactions (no need for transaction details anymore)
             var expiringTanscations = new List<CreditPointsTransaction>();
 
+            // Get all spent points for these expired transactions in one query (fix N+1 problem)
+            var expiredTransactionIds = expiredTransactions.Select(t => t.TransactionId).ToList();
+            var spentPointsLookup = await transactionDetailRepository.GetTotalPointsSpentForMultipleEarnTransactions(expiredTransactionIds);
+
             // Process the expired transactions
             foreach (var transaction in expiredTransactions)
             {
-                // Fetch total points spent from this earn transaction
-                var pointsSpent =
-                    await transactionDetailRepository.GetTotalPointsSpentForEarnTransaction(transaction.TransactionId);
+                // Get total points spent from lookup instead of individual query
+                var pointsSpent = spentPointsLookup.GetValueOrDefault(transaction.TransactionId, 0);
 
                 // Calculate remaining points that can be expired
                 var remainingPoints = transaction.Points - pointsSpent;
@@ -272,8 +279,13 @@ public class CreditPointsTransactionService(
                     expiringTanscations.Add(expireTransaction);
 
                     transaction.IsExpired = true; // Mark the original `earn` transaction as expired
-                    await transactionRepository.UpdateTransactionAsync(transaction);
                 }
+            }
+
+            // Bulk update all expired transactions
+            if (expiredTransactions.Any())
+            {
+                context.CreditPointsTransactions.UpdateRange(expiredTransactions);
             }
 
             // Add new expiration transactions to database

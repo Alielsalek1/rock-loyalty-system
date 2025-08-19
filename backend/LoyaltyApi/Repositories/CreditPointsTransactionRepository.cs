@@ -115,7 +115,7 @@ public class CreditPointsTransactionRepository(
         var expiredTransactions = await dbContext.CreditPointsTransactions
             .Where(t => t.RestaurantId == restaurant.RestaurantId
                      && t.CustomerId == customerId
-                     && t.TransactionDate < expirationDate
+                     && t.TransactionDate < DateTime.Now
                      && t.TransactionType == TransactionType.Earn
                      && !t.IsExpired
                      && t.Points > 0)

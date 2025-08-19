@@ -70,4 +70,28 @@ ILogger<CreditPointsTransactionDetailRepository> logger) : ICreditPointsTransact
 
         return totalPointsSpent;
     }
+
+    public async Task<Dictionary<int, int>> GetTotalPointsSpentForMultipleEarnTransactions(IEnumerable<int> earnTransactionIds)
+    {
+        logger.LogInformation("Getting total points spent for multiple earn transactions");
+
+        var result = await dbContext.CreditPointsTransactionsDetails
+            .Where(detail => earnTransactionIds.Contains(detail.EarnTransactionId))
+            .GroupBy(detail => detail.EarnTransactionId)
+            .Select(group => new { EarnTransactionId = group.Key, TotalPointsSpent = group.Sum(detail => detail.PointsUsed) })
+            .ToDictionaryAsync(x => x.EarnTransactionId, x => x.TotalPointsSpent);
+
+        // Ensure all requested transaction IDs are in the result, even if they have 0 points spent
+        foreach (var transactionId in earnTransactionIds)
+        {
+            if (!result.ContainsKey(transactionId))
+            {
+                result[transactionId] = 0;
+            }
+        }
+
+        logger.LogInformation("Retrieved points spent data for {Count} transactions", result.Count);
+
+        return result;
+    }
 }

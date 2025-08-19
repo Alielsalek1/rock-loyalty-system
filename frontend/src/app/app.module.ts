@@ -30,6 +30,12 @@ import {
   PaginationComponent,
   PaginationModule,
 } from 'ngx-bootstrap/pagination';
+import { AdminComponent } from './admin/admin.component';
+import { RestaurantComponent } from './admin/restaurant/restaurant.component';
+import { GetUserComponent } from './admin/get-user/get-user.component';
+import { MakeVouchersComponent } from './admin/make-vouchers/make-vouchers.component';
+import { AdminNavigatorComponent } from './admin/admin-navigator/admin-navigator.component';
+import { AdminLoginComponent } from './admin/login/login.component';
 
 @NgModule({
   declarations: [
@@ -48,7 +54,14 @@ import {
     PointsComponent,
     VouchersComponent,
     ProfileComponent,
+    
     NavigatorComponent,
+    AdminComponent,
+    RestaurantComponent,
+    GetUserComponent,
+    MakeVouchersComponent,
+    AdminNavigatorComponent,
+    AdminLoginComponent,
   ],
   imports: [
     BrowserModule,

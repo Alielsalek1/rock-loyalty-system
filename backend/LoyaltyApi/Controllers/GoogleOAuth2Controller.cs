@@ -58,7 +58,7 @@ IOptions<JwtOptions> jwtOptions) : ControllerBase
             existingUser = await userService.CreateUserAsync(registerBody) ?? throw new HttpRequestException("Failed to create user.");
         }
         string accessToken = await tokenService.GenerateAccessTokenAsync(existingUser.Id, existingUser.RestaurantId, Role.User);
-
+        HttpContext.Response.Cookies.Delete("refreshToken");
         string refreshToken = tokenService.GenerateRefreshToken(existingUser.Id, existingUser.RestaurantId, Role.User);
         HttpContext.Response.Cookies.Append("refreshToken", refreshToken, jwtOptions.Value.JwtCookieOptions);
 

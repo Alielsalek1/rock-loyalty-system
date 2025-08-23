@@ -63,7 +63,7 @@ public class TokensController(
 
         logger.LogInformation("refreshing for user {UserId} and restaurant {RestaurantId}", userId, restaurantId);
 
-        if (!await tokenService.ValidateRefreshTokenAsync(HttpContext.Request.Cookies["refreshToken"]!, restaurantId, userId))
+        if (!tokenService.ValidateRefreshToken(HttpContext.Request.Cookies["refreshToken"]!, restaurantId, userId))
             return Unauthorized(new { success = false, message = "Invalid refresh token" });
 
         logger.LogInformation("Validated the refresh token");

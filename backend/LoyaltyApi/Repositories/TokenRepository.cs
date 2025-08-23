@@ -77,14 +77,14 @@ namespace LoyaltyApi.Repositories
         }
 
         // Generic method for memory-cached token validation
-        private async Task<bool> ValidateMemoryCachedTokenAsync(Token token)
+        private bool ValidateMemoryCachedToken(Token token)
         {
             logger.LogInformation(
                 "Validating {TokenType} token for customer {CustomerId} and restaurant {RestaurantId}",
                 token.TokenType, token.CustomerId, token.RestaurantId);
 
             // First validate JWT structure and expiration
-            var isTokenValid = await ValidateTokenAsync(token);
+            var isTokenValid = ValidateToken(token);
             if (!isTokenValid) return false;
 
             // Check memory cache
@@ -123,19 +123,17 @@ namespace LoyaltyApi.Repositories
             return generatedToken;
         }
 
-        public async Task<bool> ValidateRefreshTokenAsync(Token token)
+        // Cookie-only approach: Synchronous validation (no database checks)
+        public bool ValidateRefreshToken(Token token)
         {
             logger.LogInformation("Validating refresh token for customer {CustomerId} and restaurant {RestaurantId}",
                 token.CustomerId, token.RestaurantId);
-            var isTokenValid = await ValidateTokenAsync(token);
-            var tokenExistsInDb = await dbContext.Tokens.AnyAsync(t =>
-                t.CustomerId == token.CustomerId && t.RestaurantId == token.RestaurantId &&
-                t.TokenValue == token.TokenValue && t.TokenType == TokenType.RefreshToken);
 
-            return isTokenValid && tokenExistsInDb;
+            // For cookie-only approach, just validate JWT structure and expiration
+            return ValidateToken(token);
         }
 
-        public async Task<bool> ValidateTokenAsync(Token token)
+        public bool ValidateToken(Token token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(jwtOptions.Value.SigningKey);
@@ -150,11 +148,11 @@ namespace LoyaltyApi.Repositories
             try
             {
                 tokenHandler.ValidateToken(token.TokenValue, validationParameters, out SecurityToken validatedToken);
-                return await Task.FromResult(validatedToken != null);
+                return validatedToken != null;
             }
             catch
             {
-                return await Task.FromResult(false);
+                return false;
             }
         }
 
@@ -167,13 +165,13 @@ namespace LoyaltyApi.Repositories
             if (refreshToken == null)
                 return null;
 
-            if (await ValidateTokenAsync(refreshToken) == true)
+            if (ValidateToken(refreshToken) == true)
                 return refreshToken;
 
             return null;
         }
 
-        public async Task<string> GenerateRefreshTokenAsync(Token token)
+        public string GenerateRefreshToken(Token token)
         {
             JwtSecurityToken generatedToken = GenerateToken(token);
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -190,8 +188,6 @@ namespace LoyaltyApi.Repositories
                 RestaurantId = restaurantId,
                 TokenType = TokenType.RefreshToken
             };
-            await dbContext.Tokens.AddAsync(refreshToken);
-            await dbContext.SaveChangesAsync();
             logger.LogInformation("Generated refresh token for customer {CustomerId} and restaurant {RestaurantId}",
                 token.CustomerId, token.RestaurantId);
             return refreshToken.TokenValue;
@@ -208,14 +204,14 @@ namespace LoyaltyApi.Repositories
             return GenerateMemoryCachedToken(token);
         }
 
-        public async Task<bool> ValidateConfirmEmailTokenAsync(Token token)
+        public bool ValidateConfirmEmailToken(Token token)
         {
-            return await ValidateMemoryCachedTokenAsync(token);
+            return ValidateMemoryCachedToken(token);
         }
 
-        public async Task<bool> ValidateForgotPasswordTokenAsync(Token token)
+        public bool ValidateForgotPasswordToken(Token token)
         {
-            return await ValidateMemoryCachedTokenAsync(token);
+            return ValidateMemoryCachedToken(token);
         }
 
         // Debug methods for cache inspection

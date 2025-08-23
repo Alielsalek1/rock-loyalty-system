@@ -100,7 +100,7 @@ public class PasswordController(
     public async Task<ActionResult> UpdatePasswordWithForgotPasswordToken(string token, [FromBody] UpdatePasswordRequestModel requestBody)
     {
         logger.LogInformation("Update password request for customer with {Token}", token);
-        if (!await tokenService.ValidateForgotPasswordTokenAsync(token)) return Unauthorized(new { success = false, message = "Invalid token" });
+        if (!tokenService.ValidateForgotPasswordToken(token)) return Unauthorized(new { success = false, message = "Invalid token" });
         Token forgotPasswordToken = tokenUtility.ReadToken(token);
         await passwordService.UpdatePasswordAsync(forgotPasswordToken.CustomerId, forgotPasswordToken.RestaurantId,
             requestBody.Password);

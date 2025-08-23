@@ -29,6 +29,7 @@ namespace LoyaltyApi
             Log.Logger.Information("Setting configurations");
 
             services.AddHttpContextAccessor();
+            services.AddMemoryCache();
             services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
             services.Configure<FacebookOptions>(configuration.GetSection("FacebookOptions"));
             services.Configure<Config.GoogleOptions>(configuration.GetSection("GoogleOptions"));
@@ -94,6 +95,7 @@ namespace LoyaltyApi
             services.AddScoped<IRestaurantRepository, RestaurantRepository>();
             services.AddScoped<IRestaurantService, RestaurantService>();
             services.AddScoped<ICreditPointsTransactionRepository, CreditPointsTransactionRepository>();
+            services.AddScoped<ICreditPointsTransactionDetailRepository, CreditPointsTransactionDetailRepository>();
             services.AddScoped(provider =>
 
               new OAuth2Service(new HttpClient())
@@ -104,8 +106,6 @@ namespace LoyaltyApi
             services.AddScoped<TokenUtility>();
             services.AddScoped<ParserUtility>();
             services.AddScoped<EmailService>();
-            services.AddScoped<ICreditPointsTransactionDetailRepository, CreditPointsTransactionDetailRepository>();
-            services.AddScoped<ICreditPointsTransactionRepository, CreditPointsTransactionRepository>();
             services.AddScoped<ICreditPointsTransactionService, CreditPointsTransactionService>();
             services.AddScoped<IPasswordHasher<Password>, PasswordHasher<Password>>();
             services.AddScoped<IPasswordRepository, PasswordRepository>();

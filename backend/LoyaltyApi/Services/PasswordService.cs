@@ -26,7 +26,7 @@ namespace LoyaltyApi.Services
         public async Task ConfirmEmail(string token)
         {
             logger.LogInformation("Confirming email with token {token}", token);
-            if (!await tokenService.ValidateConfirmEmailTokenAsync(token)) throw new SecurityTokenMalformedException("Invalid Confirm Email Token");
+            if (!tokenService.ValidateConfirmEmailToken(token)) throw new SecurityTokenMalformedException("Invalid Confirm Email Token");
             Token tokenData = tokenUtility.ReadToken(token);
             Password passwordModel = new()
             {

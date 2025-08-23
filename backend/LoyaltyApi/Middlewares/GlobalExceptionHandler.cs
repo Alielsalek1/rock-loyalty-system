@@ -73,20 +73,20 @@ public class GlobalExceptionHandler
             errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status401Unauthorized;
         }
-        else if (exception is ApiUtilityException)
+        else if (exception is ExpirePointsFailedException)
         {
             errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status500InternalServerError;
         }
-        else if (exception is NotFoundException)
+        else if (exception is ArgumentException)
         {
             errorResponse = new { success = false, message = exception.Message };
-            statusCode = StatusCodes.Status404NotFound;
+            statusCode = StatusCodes.Status400BadRequest;
         }
-        else if (exception is AlreadyExistsException)
+        else if (exception is MinimumPointsNotReachedException)
         {
             errorResponse = new { success = false, message = exception.Message };
-            statusCode = StatusCodes.Status409Conflict;
+            statusCode = StatusCodes.Status422UnprocessableEntity;
         }
         else
         {

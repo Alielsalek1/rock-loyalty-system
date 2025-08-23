@@ -4,6 +4,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using LoyaltyApi.Config;
+using LoyaltyApi.Models;
+using LoyaltyApi.Repositories;
 using LoyaltyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -61,7 +63,7 @@ public class TokensController(
 
         logger.LogInformation("refreshing for user {UserId} and restaurant {RestaurantId}", userId, restaurantId);
 
-        if (!await tokenService.ValidateRefreshTokenAsync(HttpContext.Request.Cookies["refreshToken"], restaurantId, userId))
+        if (!tokenService.ValidateRefreshToken(HttpContext.Request.Cookies["refreshToken"]!, restaurantId, userId))
             return Unauthorized(new { success = false, message = "Invalid refresh token" });
 
         logger.LogInformation("Validated the refresh token");
@@ -75,4 +77,132 @@ public class TokensController(
             data = new { accessToken }
         });
     }
+
+    //TODO: For Testing 
+    // [HttpGet]
+    // [Route("debug/cache-check")]
+    // public async Task<ActionResult> CheckTokenInCache([FromQuery] string tokenType, [FromQuery] int customerId, [FromQuery] int restaurantId)
+    // {
+    //     logger.LogInformation("Debug: Checking cache for {TokenType} token - Customer: {CustomerId}, Restaurant: {RestaurantId}",
+    //         tokenType, customerId, restaurantId);
+
+    //     if (!Enum.TryParse<TokenType>(tokenType, true, out var tokenTypeEnum))
+    //     {
+    //         return BadRequest(new
+    //         {
+    //             success = false,
+    //             message = $"Invalid token type. Valid types: {string.Join(", ", Enum.GetNames<TokenType>())}"
+    //         });
+    //     }
+
+    //     try
+    //     {
+    //         var existsInCache = await tokenRepository.IsCacheContainsTokenAsync(tokenTypeEnum, customerId, restaurantId);
+    //         var cachedToken = await tokenRepository.GetCachedTokenForInspectionAsync(tokenTypeEnum, customerId, restaurantId);
+
+    //         return Ok(new
+    //         {
+    //             success = true,
+    //             message = "Cache check completed",
+    //             data = new
+    //             {
+    //                 tokenType = tokenTypeEnum.ToString(),
+    //                 customerId,
+    //                 restaurantId,
+    //                 existsInCache,
+    //                 tokenInfo = cachedToken != null ? new
+    //                 {
+    //                     tokenType = cachedToken.TokenType.ToString(),
+    //                     customerId = cachedToken.CustomerId,
+    //                     restaurantId = cachedToken.RestaurantId,
+    //                     role = cachedToken.Role.ToString(),
+    //                     tokenValuePreview = cachedToken.TokenValue?.Substring(0, Math.Min(20, cachedToken.TokenValue.Length)) + "..." // Show first 20 chars only
+    //                 } : null
+    //             }
+    //         });
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         logger.LogError(ex, "Error checking cache for token");
+    //         return StatusCode(500, new
+    //         {
+    //             success = false,
+    //             message = "Error checking cache",
+    //             error = ex.Message
+    //         });
+    //     }
+    // }
+
+    // /// <summary>
+    // /// Debug endpoint to get all cached tokens information (without token values for security).
+    // /// </summary>
+    // /// <remarks>
+    // /// Sample request:
+    // ///     GET /api/tokens/debug/cache-summary
+    // /// </remarks>
+    // /// <returns>Summary of all tokens currently in cache</returns>
+    // /// <response code="200">Returns cache summary</response>
+    // [HttpGet]
+    // [Route("debug/cache-summary")]
+    // public async Task<ActionResult> GetCacheSummary()
+    // {
+    //     logger.LogInformation("Debug: Getting cache summary");
+
+    //     try
+    //     {
+    //         var tokenTypes = new[] { TokenType.ConfirmEmail, TokenType.ForgotPasswordToken };
+    //         var cacheSummary = new List<object>();
+
+    //         // This is a simple approach - in production you might want to track cached tokens differently
+    //         // For now, we'll just check some common scenarios
+    //         for (int customerId = 1; customerId <= 10; customerId++)
+    //         {
+    //             for (int restaurantId = 1; restaurantId <= 5; restaurantId++)
+    //             {
+    //                 foreach (var tokenType in tokenTypes)
+    //                 {
+    //                     var existsInCache = await tokenRepository.IsCacheContainsTokenAsync(tokenType, customerId, restaurantId);
+    //                     if (existsInCache)
+    //                     {
+    //                         var cachedToken = await tokenRepository.GetCachedTokenForInspectionAsync(tokenType, customerId, restaurantId);
+    //                         if (cachedToken != null)
+    //                         {
+    //                             cacheSummary.Add(new
+    //                             {
+    //                                 tokenType = cachedToken.TokenType.ToString(),
+    //                                 customerId = cachedToken.CustomerId,
+    //                                 restaurantId = cachedToken.RestaurantId,
+    //                                 role = cachedToken.Role.ToString()
+    //                             });
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         return Ok(new
+    //         {
+    //             success = true,
+    //             message = "Cache summary retrieved",
+    //             data = new
+    //             {
+    //                 totalCachedTokens = cacheSummary.Count,
+    //                 tokens = cacheSummary,
+    //                 note = "Only showing first 50 customer/restaurant combinations (1-10 customers, 1-5 restaurants)"
+    //             }
+    //         });
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         logger.LogError(ex, "Error getting cache summary");
+    //         return StatusCode(500, new
+    //         {
+    //             success = false,
+    //             message = "Error getting cache summary",
+    //             error = ex.Message
+    //         });
+    //     }
+    // }
+
+
 }

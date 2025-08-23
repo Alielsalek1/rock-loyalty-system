@@ -81,14 +81,14 @@ public class UsersController(
             return BadRequest(new { success = false, message = "Password is required" });
 
         if (existingUser is not null)
-                return BadRequest(new { success = false, message = "User already exists" });
+            return BadRequest(new { success = false, message = "User already exists" });
 
         User? user = await userService.CreateUserAsync(requestBody);
 
-        var confirmToken = await tokenService.GenerateConfirmEmailTokenAsync(user.Id, user.RestaurantId);
-        await emailService.SendEmailAsync(user.Email, $"Email Confirmation for Loyalty System",
-            $"Welcome to Loyalty System. Please Confirm your email by clicking on the following link: {frontendOptions.Value.BaseUrl}/{user.RestaurantId}/auth/confirm-email/" +
-            confirmToken, "Rock Loyalty System");
+        tokenService.GenerateConfirmEmailToken(user!.Id, user.RestaurantId);
+        // await emailService.SendEmailAsync(user.Email, $"Email Confirmation for Loyalty System",
+        //     $"Welcome to Loyalty System. Please Confirm your email by clicking on the following link: {frontendOptions.Value.BaseUrl}/{user.RestaurantId}/auth/confirm-email/" +
+        //     confirmToken, "Rock Loyalty System");
 
         if (user == null) return StatusCode(500, new { success = false, message = "User creation failed" });
 
@@ -268,7 +268,7 @@ public class UsersController(
 
         User user = await userService.UpdateUserAsync(requestBody, userId, restaurantId);
         if (user == null) return NotFound(new { success = false, message = "User not found" });
-        
+
         return Ok(new
         {
             success = true,
@@ -339,4 +339,5 @@ public class UsersController(
             data = new { user }
         });
     }
+
 }

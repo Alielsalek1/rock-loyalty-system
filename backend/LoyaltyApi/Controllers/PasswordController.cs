@@ -60,7 +60,7 @@ public class PasswordController(
 
         if (user is null) return NotFound(new { success = false, message = "User not found" });
         _ = await passwordService.GetPasswordByCustomerIdAsync(user.Id, user.RestaurantId) ?? throw new ArgumentException("Password doesn't exist");
-        var forgotPasswordToken = await tokenService.GenerateForgotPasswordTokenAsync(user.Id, user.RestaurantId);
+        var forgotPasswordToken = tokenService.GenerateForgotPasswordToken(user.Id, user.RestaurantId);
         await emailService.SendEmailAsync(user.Email, $"Forgot Password for {user.Name} - {user.Email}",
             $"Your password reset link is {frontendOptions.Value.BaseUrl}/{requestBody.RestaurantId}/auth/forget-password/{forgotPasswordToken}",
             "Rock Loyalty System");
@@ -100,7 +100,7 @@ public class PasswordController(
     public async Task<ActionResult> UpdatePasswordWithForgotPasswordToken(string token, [FromBody] UpdatePasswordRequestModel requestBody)
     {
         logger.LogInformation("Update password request for customer with {Token}", token);
-        if (!await tokenService.ValidateForgotPasswordTokenAsync(token)) return Unauthorized(new { success = false, message = "Invalid token" });
+        if (!tokenService.ValidateForgotPasswordToken(token)) return Unauthorized(new { success = false, message = "Invalid token" });
         Token forgotPasswordToken = tokenUtility.ReadToken(token);
         await passwordService.UpdatePasswordAsync(forgotPasswordToken.CustomerId, forgotPasswordToken.RestaurantId,
             requestBody.Password);

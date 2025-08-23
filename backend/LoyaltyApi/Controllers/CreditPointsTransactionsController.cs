@@ -273,7 +273,7 @@ public class CreditPointsTransactionController(
         logger.LogInformation("Get transactions for customer {CustomerId} and restaurant {RestaurantId}",
             userId, restaurantId);
         var paginationResult =
-            await transactionService.GetTransactionsByCustomerAndRestaurantAsync(userId, restaurantId, pageNumber, pageSize);
+            await transactionService.GetAllTransactionsByCustomerAndRestaurantAsync(userId, restaurantId, pageNumber, pageSize);
         var transactions = paginationResult.Transactions;
         var restaurantSettings = await restaurantService.GetRestaurantById(restaurantId) ?? throw new Exception("Restaurant not found");
         var transactionsResponse = transactions.Select(t => new
@@ -301,13 +301,13 @@ public class CreditPointsTransactionController(
 
     //TODO: DON'T USE ONLY FOR TESTING PURPOSES
     // [HttpPost("credit-points/expire")]
-    // [Authorize(Roles = "Admin")]
+    // // [Authorize(Roles = "Admin")]
     // public async Task<IActionResult> ExpirePointsJob()
     // {
     //     try
     //     {
     //         logger.LogInformation("Running ExpirePointsJob");
-    //         var expired = await transactionService.ExpirePointsAsync();
+    //         var expired = await transactionService.ExpirePointsAsync(1234, 1);
     //         return Ok(expired);
     //     }
     //     catch (Exception ex)

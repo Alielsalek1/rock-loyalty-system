@@ -22,10 +22,7 @@ namespace LoyaltyApi.Models
 
         public DateTime TransactionDate { get; set; } = DateTime.Now;
 
-
         // Navigation properties
-        public Restaurant Restaurant { get; set; }
-
         public ICollection<CreditPointsTransactionDetail> CreditPointsTransactionDetails { get; set; }
     }
 }

@@ -6,20 +6,24 @@ namespace LoyaltyApi.Repositories
     {
         Task<string> GenerateAccessTokenAsync(Token token);
 
-        Task<string> GenerateRefreshTokenAsync(Token token);
+        string GenerateRefreshToken(Token token);
 
-        Task<bool> ValidateTokenAsync(Token token);
+        bool ValidateToken(Token token);
 
-        Task<bool> ValidateRefreshTokenAsync(Token token);
-        
-        Task<bool> ValidateConfirmEmailTokenAsync(Token token);
-        
-        Task<string> GenerateForgotPasswordTokenAsync(Token token);
+        bool ValidateRefreshToken(Token token);
 
-        Task<string> GenerateConfirmEmailTokenAsync(Token token);
-        
-        Task<bool> ValidateForgotPasswordTokenAsync(Token token);
+        bool ValidateConfirmEmailToken(Token token);
+
+        string GenerateForgotPasswordToken(Token token);
+
+        string GenerateConfirmEmailToken(Token token);
+
+        bool ValidateForgotPasswordToken(Token token);
 
         Task<Token?> GetRefreshTokenAsync(Token token);
+
+        bool IsCacheContainsToken(TokenType tokenType, int customerId, int restaurantId);
+
+        Token? GetCachedTokenForInspection(TokenType tokenType, int customerId, int restaurantId);
     }
 }

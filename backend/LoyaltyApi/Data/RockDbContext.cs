@@ -41,8 +41,11 @@ namespace LoyaltyApi.Data
                 .HasKey(x => new { x.CustomerId, x.RestaurantId, x.TokenValue });
 
             modelBuilder.Entity<Token>()
-            .Property(x => x.TokenType)
-            .HasConversion<string>();
+                .Property(x => x.TokenType)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<Token>()
+                .HasIndex(t => t.TokenValue);
 
             modelBuilder.Entity<Voucher>()
                 .HasKey(x => x.ShortCode);
@@ -52,40 +55,26 @@ namespace LoyaltyApi.Data
                 .HasDefaultValue(false);
 
             modelBuilder.Entity<Voucher>()
-                .HasIndex(v => new {v.CustomerId, v.RestaurantId});
-            
-            modelBuilder.Entity<Voucher>()
-                .HasIndex(v => v.DateOfCreation);
-            
+                .HasIndex(v => new { v.CustomerId, v.RestaurantId });
+
             modelBuilder.Entity<CreditPointsTransaction>()
                 .HasKey(p => p.TransactionId);
-            
+
             modelBuilder.Entity<CreditPointsTransaction>()
                 .HasIndex(p => p.ReceiptId);
-            
+
             modelBuilder.Entity<CreditPointsTransaction>()
-                .HasIndex(p => p.TransactionDate);
-            
-            modelBuilder.Entity<CreditPointsTransaction>()
-                .HasIndex(p => new {p.RestaurantId, p.CustomerId});
-            
+                .HasIndex(p => new { p.RestaurantId, p.CustomerId });
+
             modelBuilder.Entity<CreditPointsTransaction>()
                 .Property(p => p.TransactionId)
                 .ValueGeneratedOnAdd();
-
-            modelBuilder.Entity<CreditPointsTransaction>()
-                .HasOne(p => p.Restaurant)
-                .WithMany()
-                .HasForeignKey(p => p.RestaurantId);
 
             modelBuilder.Entity<CreditPointsTransactionDetail>()
                 .HasKey(d => d.DetailId);
 
             modelBuilder.Entity<CreditPointsTransactionDetail>()
                 .HasIndex(d => d.TransactionId);
-            
-            modelBuilder.Entity<CreditPointsTransactionDetail>()
-                .HasIndex(d => d.EarnTransactionId);
 
             modelBuilder.Entity<CreditPointsTransactionDetail>()
                 .Property(d => d.DetailId)

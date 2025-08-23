@@ -42,7 +42,7 @@ IOptions<JwtOptions> jwtOptions) : ControllerBase
     ///     GET /api/oauth2/signin-google?restaurantId=1
     ///
     /// </remarks>
-     [HttpPost("signin-google")]
+    [HttpPost("signin-google")]
     public async Task<ActionResult> SignInWithGoogle([FromBody] OAuth2Body body)
     {
         var user = await oauth2Service.HandleGoogleSignIn(body.AccessToken);
@@ -59,7 +59,7 @@ IOptions<JwtOptions> jwtOptions) : ControllerBase
         }
         string accessToken = await tokenService.GenerateAccessTokenAsync(existingUser.Id, existingUser.RestaurantId, Role.User);
 
-        string refreshToken = await tokenService.GenerateOrGetRefreshTokenAsync(existingUser.Id, existingUser.RestaurantId, Role.User);
+        string refreshToken = tokenService.GenerateRefreshToken(existingUser.Id, existingUser.RestaurantId, Role.User);
         HttpContext.Response.Cookies.Append("refreshToken", refreshToken, jwtOptions.Value.JwtCookieOptions);
 
         return Ok(new

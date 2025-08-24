@@ -7,9 +7,9 @@ namespace LoyaltyApi.Services
     {
         Task<PagedVouchersResponse> GetUserVouchersAsync(int customerId, int restaurantId, int pageNumber, int pageSize);
 
-        Task<Voucher> GetVoucherAsync(int customerId, int restaurantId, string shortCode);
+        Task<Voucher> GetVoucherAsync(string shortCode);
 
         Task<Voucher> CreateVoucherAsync(CreateVoucherRequest voucherRequest, int customerId, int restaurantId);
-        Task<Voucher> SetIsUsedAsync(string shorCode, SetIsUsedRequestModel requestModel);
+        Task<Voucher> SetIsUsedAsync(string shortCode);
     }
 }

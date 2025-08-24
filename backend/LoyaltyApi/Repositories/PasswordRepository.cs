@@ -15,8 +15,6 @@ namespace LoyaltyApi.Repositories
             return password;
         }
 
-
-
         public async Task<Password?> GetPasswordAsync(Password password)
         {
             logger.LogInformation("Getting password for customer {CustomerId} and restaurant {RestaurantId}", password.CustomerId, password.RestaurantId);

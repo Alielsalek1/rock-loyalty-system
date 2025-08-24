@@ -129,7 +129,11 @@ public class VoucherController(
         string restaurantClaim = User.FindFirst("restaurantId")?.Value ?? throw new UnauthorizedAccessException();
         _ = int.TryParse(userClaim, out var userId);
         _ = int.TryParse(restaurantClaim, out var restaurantId);
-        var voucher = await voucherService.GetVoucherAsync(userId, restaurantId, shortCode);
+        
+        if (userId == 0 || restaurantId == 0)
+            throw new UnauthorizedAccessException();
+
+        var voucher = await voucherService.GetVoucherAsync(shortCode);
         var result = new
         {
             voucher.ShortCode,
@@ -316,15 +320,15 @@ public class VoucherController(
     [HttpPut]
     [Route("admin/vouchers/{shortCode}")]
     // [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> SetIsUsed([FromRoute] string shortCode, [FromBody] SetIsUsedRequestModel requestModel)
+    public async Task<ActionResult> SetIsUsed([FromRoute] string shortCode)
     {
         logger.LogInformation("Setting voucher {ShortCode} to used", shortCode);
 
-        Voucher voucher = await voucherService.SetIsUsedAsync(shortCode, requestModel);
+        Voucher voucher = await voucherService.SetIsUsedAsync(shortCode);
         return Ok(new
         {
             success = true,
-            message = $"Voucher isUsed set to {requestModel.IsUsed}",
+            message = $"Voucher isUsed set to {true}",
             data = new
             {
                 voucher = new

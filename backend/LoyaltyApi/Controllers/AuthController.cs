@@ -98,8 +98,10 @@ public class AuthController(
 
         Password? password =
             await passwordService.GetAndValidatePasswordAsync(user.Id, user.RestaurantId, loginBody.Password);
-        if (password is null || !password.ConfirmedEmail)
+        if (password is null)
             return Unauthorized(new { success = false, message = "Invalid password." });
+        if (!password.ConfirmedEmail)
+            return Unauthorized(new { success = false, message = "Email not confirmed." });
 
         var accessToken = await tokenService.GenerateAccessTokenAsync(user.Id, loginBody.RestaurantId, Role.User);
 

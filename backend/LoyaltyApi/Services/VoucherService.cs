@@ -43,27 +43,18 @@ namespace LoyaltyApi.Services
         }
 
 
-        public async Task<Voucher> GetVoucherAsync(int customerId, int restaurantId, string shortCode)
+        public async Task<Voucher> GetVoucherAsync(string shortCode)
         {
-            Voucher voucher = new()
-            {
-                RestaurantId = restaurantId,
-                ShortCode = shortCode,
-                CustomerId = customerId
-            };
-            return await voucherRepository.GetVoucherAsync(voucher) ?? throw new Exception("Voucher not found");
+            return await voucherRepository.GetVoucherAsync(shortCode) ?? throw new Exception("Voucher not found");
         }
 
-        public async Task<Voucher> SetIsUsedAsync(string shortCode, SetIsUsedRequestModel requestModel)
+        public async Task<Voucher> SetIsUsedAsync(string shortCode)
         {
-            logger.LogTrace("Setting isUsed to {isUsed} for voucher {ShortCode}", requestModel.IsUsed, shortCode);
-            Voucher voucher = new()
-            {
-                ShortCode = shortCode,
-                IsUsed = requestModel.IsUsed,
-                RestaurantId = requestModel.RestaurantId,
-                CustomerId = requestModel.CustomerId
-            };
+            logger.LogTrace("Setting isUsed to {isUsed} for voucher {ShortCode}", true, shortCode);
+            
+            Voucher voucher = await voucherRepository.GetVoucherAsync(shortCode) ?? throw new Exception("Voucher not found");
+            voucher.IsUsed = true;
+
             return await voucherRepository.UpdateVoucherAsync(voucher);
         }
     }

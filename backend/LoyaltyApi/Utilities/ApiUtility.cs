@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using LoyaltyApi.Config;
+using LoyaltyApi.Exceptions;
 using LoyaltyApi.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -11,7 +12,8 @@ namespace LoyaltyApi.Utilities
 {
     public class ApiUtility(IOptions<API> apiOptions,
     ILogger<ApiUtility> logger,
-    IHttpClientFactory httpClientFactory)
+    IHttpClientFactory httpClientFactory,
+    ParserUtility parserUtility)
     {
         public async Task<string> GetApiKey(string restaurantId)
         {
@@ -47,34 +49,34 @@ namespace LoyaltyApi.Utilities
             {
                 DTL = new[]
                 {
-                    new
+                    new 
                         {
                             VOCHNO = 1,// This is constant do not change it
                             VOCHVAL = voucher.Value,
                             EXPDT = voucher.DateOfCreation.AddMinutes(restaurant.VoucherLifeTime).ToString("yyyy-MM-dd"),
                         }
                 },
-                CNO = voucher.CustomerId.ToString(),
+                CNO = voucher.CustomerId,
                 CCODE = "C"
             };
             logger.LogCritical(body.DTL.First().EXPDT);
             string jsonBody = JsonSerializer.Serialize(body);
             StringContent content = new(jsonBody, Encoding.UTF8, "application/json");
             client.DefaultRequestHeaders.Add("XApiKey", apiKey);
-            var result = await client.PostAsync($"{apiOptions.Value.BaseUrl}/api/HISCMD/ADDVOC", content);
-            var message = await result.Content.ReadAsStringAsync();
-            logger.LogInformation("Request made to generate voucher. Response Message: {message}", message);
-            if (message.Replace(" ", "").Contains("ERR"))
-                throw new HttpRequestException($"Request to create user failed with message: {message}");
+            var result = await client.PostAsync($"http://192.168.1.50:5001/api/HISCMD/ADDVOC", content);
             string responseContent = await result.Content.ReadAsStringAsync();
-            var responseObject = JsonSerializer.Deserialize<List<String>>(responseContent) ?? throw new HttpRequestException("Request to create user failed");
+            logger.LogInformation("Request made to generate voucher. Response Message: {message}", responseContent);
+            if (responseContent.Replace(" ", "").Contains("ERR"))
+                throw new ApiUtilityException($"Request to create voucher failed with message: {responseContent}");
+            
+            var responseObject = JsonSerializer.Deserialize<List<String>>(responseContent) ?? throw new HttpRequestException("Request to create voucher failed");
             return responseObject.First();
         }
         public async Task<User?> GetUserAsync(User user, string apiKey)
         {
             var client = httpClientFactory.CreateClient("ApiClient");
             client.DefaultRequestHeaders.Add("XApiKey", apiKey);
-            string url = $"{apiOptions.Value.BaseUrl}/api/concmd/GETCON/C/{user.PhoneNumber ?? user.Email ?? user.Id.ToString() ?? throw new ArgumentException("Phone number or email is missing")}";
+            string url = $"http://192.168.1.50:5001/api/concmd/GETCON/C/{user.PhoneNumber ?? user.Email ?? user.Id.ToString() ?? throw new ArgumentException("Phone number or email is missing")}";
             var result = await client.GetAsync(url);
             var json = await result.Content.ReadAsStringAsync();
             logger.LogInformation("Request made to get user. Response Message: .{message}.", json.ToString());
@@ -96,7 +98,7 @@ namespace LoyaltyApi.Utilities
             };
             return createdUser;
         }
-        public async Task<User?> CreateUserAsync(User user, string apiKey)
+        public async Task<User> CreateUserAsync(User user, string apiKey)
         {
             var client = httpClientFactory.CreateClient("ApiClient");
             var body = new
@@ -110,7 +112,10 @@ namespace LoyaltyApi.Utilities
                 TEL2 = "",
                 EMAIL = user.Email,
                 EMAIL1 = "",
-                IMG = ""
+                IMG = new
+                {
+                    Base64Data = ""
+                }
             };
             // Serialize the body object to JSON
             string jsonBody = JsonSerializer.Serialize(body);
@@ -124,17 +129,29 @@ namespace LoyaltyApi.Utilities
 
             // Send the POST request
             HttpResponseMessage response = await client.PostAsync($"http://192.168.1.50:5001/api/CONCMD/ADDCON", content);
-
+            
             logger.LogInformation("Request made to create user. Response Status Code: {statusCode}", response.StatusCode);
 
             // Check the response status and handle accordingly
             string message = await response.Content.ReadAsStringAsync();
-            if (message.Replace(" ", "").Contains("ERR"))
-                throw new HttpRequestException($"Request to create user failed with message: {message}");
-            Match match = Regex.Match(message, @"\d+");
-            user.Id = int.Parse(match.Value);
-            logger.LogInformation("Request made to create user with id: {Id} . Response Message: {message}", user.Id, message);
-            return user;
+            var result = parserUtility.UserParser(message);
+            dynamic dynamicResult = result;
+            string parserResponse = dynamicResult.response;
+            bool isSuccess = dynamicResult.success;
+            
+            logger.LogCritical("---------------->",parserResponse);
+
+            if (isSuccess)
+            {
+                logger.LogInformation("User created with customer Number {customerId}", (string)dynamicResult.customerId.ToString());
+                user.Id = dynamicResult.customerId;
+                return user;
+            }
+            else
+            {
+                logger.LogWarning("User creation failed with message: {message}", message);
+                throw new ApiUtilityException($"Request to create user failed with message: {message}");
+            }
         }
         public async Task<User> UpdateUserAsync(User user, string apiKey)
         {
@@ -149,6 +166,10 @@ namespace LoyaltyApi.Utilities
                 TEL2 = "",
                 EMAIL = user.Email,
                 EMAIL1 = "",
+                IMG = new
+                {
+                    Base64Data = ""
+                }
             };
             // Serialize the body object to JSON
             string jsonBody = JsonSerializer.Serialize(body);
@@ -161,8 +182,10 @@ namespace LoyaltyApi.Utilities
             // Send the POST request
             HttpResponseMessage response = await client.PostAsync($"{apiOptions.Value.BaseUrl}/api/CONCMD/ADDCON", content);
             string message = await response.Content.ReadAsStringAsync();
+            
             if (message.Replace(" ", "").Contains("ERR"))
-                throw new HttpRequestException($"Request to create user failed with message: {message}");
+                throw new ApiUtilityException($"Request to update user failed: {message}");
+
             logger.LogInformation("Request made to update user. Response Message: {message}", message);
             return user;
         }

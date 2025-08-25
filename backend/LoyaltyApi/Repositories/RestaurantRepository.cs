@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LoyaltyApi.Repositories
 {
-    public class RestaurantRepository(FrontendDbContext dbContext,
+    public class RestaurantRepository(RockDbContext dbContext,
     ILogger<RestaurantRepository> logger) : IRestaurantRepository
     {
         //Create Method

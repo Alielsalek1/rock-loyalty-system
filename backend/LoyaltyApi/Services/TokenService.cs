@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 namespace LoyaltyApi.Services
 {
     public class TokenService(ITokenRepository repository,
-    ILogger<TokenService> logger, IConfiguration configuration) : ITokenService
+    ILogger<TokenService> logger) : ITokenService
     {
         public async Task<string> GenerateAccessTokenAsync(int customerId, int restaurantId, Role role)
         {
@@ -23,7 +23,7 @@ namespace LoyaltyApi.Services
             return await repository.GenerateAccessTokenAsync(token);
         }
 
-        public async Task<string> GenerateOrGetRefreshTokenAsync(int customerId, int restaurantId, Role role)
+        public string GenerateRefreshToken(int customerId, int restaurantId, Role role)
         {
             logger.LogInformation("Generating refresh token for customer {customerId} and restaurant {restaurantId}", customerId, restaurantId);
             Token token = new()
@@ -34,17 +34,17 @@ namespace LoyaltyApi.Services
                 Role = role
             };
 
-            var refreshToken = await repository.GetRefreshTokenAsync(token);
-            if (refreshToken != null)
-            {
-                logger.LogInformation("Refresh token already exists for customer {CustomerId} and restaurant {RestaurantId} and is valid", customerId, restaurantId);
-                return refreshToken.TokenValue;
-            }
+            // var refreshToken = await repository.GetRefreshTokenAsync(token);
+            // if (refreshToken != null)
+            // {
+            //     logger.LogInformation("Refresh token already exists for customer {CustomerId} and restaurant {RestaurantId} and is valid", customerId, restaurantId);
+            //     return refreshToken.TokenValue;
+            // }
 
-            return await repository.GenerateRefreshTokenAsync(token);
+            return repository.GenerateRefreshToken(token);
         }
 
-        public async Task<bool> ValidateRefreshTokenAsync(string tokenValue, int restaurantId, int customerId)
+        public bool ValidateRefreshToken(string tokenValue, int restaurantId, int customerId)
         {
             logger.LogInformation("Validating refresh token for token {tokenValue}", tokenValue);
             Token token = new()
@@ -54,7 +54,7 @@ namespace LoyaltyApi.Services
                 RestaurantId = restaurantId,
                 CustomerId = customerId
             };
-            return await repository.ValidateRefreshTokenAsync(token);
+            return repository.ValidateRefreshToken(token);
         }
 
         public async Task<(string accessTokenValue, string refreshTokenValue)> RefreshTokensAsync(int customerId, int restaurantId)
@@ -68,7 +68,7 @@ namespace LoyaltyApi.Services
                 Role = Role.User
 
             };
-            
+
             Token accessToken = new()
             {
                 CustomerId = customerId,
@@ -76,12 +76,12 @@ namespace LoyaltyApi.Services
                 TokenType = TokenType.AccessToken,
                 Role = Role.User
             };
-            string refreshTokenValue = await repository.GenerateRefreshTokenAsync(refreshToken);
+            string refreshTokenValue = repository.GenerateRefreshToken(refreshToken);
             string accessTokenValue = await repository.GenerateAccessTokenAsync(accessToken);
             return (accessTokenValue, refreshTokenValue);
         }
 
-        public async Task<string> GenerateForgotPasswordTokenAsync(int customerId, int restaurantId)
+        public string GenerateForgotPasswordToken(int customerId, int restaurantId)
         {
             logger.LogInformation("Generating forgot password token for customer {customerId} and restaurant {restaurantId}", customerId, restaurantId);
             Token token = new()
@@ -90,10 +90,10 @@ namespace LoyaltyApi.Services
                 RestaurantId = restaurantId,
                 TokenType = TokenType.ForgotPasswordToken,
             };
-            return await repository.GenerateForgotPasswordTokenAsync(token);
+            return repository.GenerateForgotPasswordToken(token);
         }
 
-        public async Task<string> GenerateConfirmEmailTokenAsync(int customerId, int restaurantId)
+        public string GenerateConfirmEmailToken(int customerId, int restaurantId)
         {
             logger.LogInformation("Generating confirm email token for customer {customerId} and restaurant {restaurantId}", customerId, restaurantId);
             Token token = new()
@@ -102,10 +102,10 @@ namespace LoyaltyApi.Services
                 RestaurantId = restaurantId,
                 TokenType = TokenType.ConfirmEmail,
             };
-            return await repository.GenerateConfirmEmailTokenAsync(token);
+            return repository.GenerateConfirmEmailToken(token);
         }
 
-        public async Task<bool> ValidateConfirmEmailTokenAsync(string token)
+        public bool ValidateConfirmEmailToken(string token)
         {
             logger.LogInformation("Validating confirm email token for token {token}", token);
             Token tokenModel = new()
@@ -113,10 +113,10 @@ namespace LoyaltyApi.Services
                 TokenValue = token,
                 TokenType = TokenType.ConfirmEmail
             };
-            return await repository.ValidateConfirmEmailTokenAsync(tokenModel);
+            return repository.ValidateConfirmEmailToken(tokenModel);
         }
 
-        public async Task<bool> ValidateForgotPasswordTokenAsync(string token)
+        public bool ValidateForgotPasswordToken(string token)
         {
             logger.LogInformation("Validating forgot password token for token {token}", token);
             Token tokenModel = new()
@@ -124,7 +124,7 @@ namespace LoyaltyApi.Services
                 TokenValue = token,
                 TokenType = TokenType.ForgotPasswordToken
             };
-            return await repository.ValidateForgotPasswordTokenAsync(tokenModel);
+            return repository.ValidateForgotPasswordToken(tokenModel);
         }
     }
 }

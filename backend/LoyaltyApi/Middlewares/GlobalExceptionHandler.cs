@@ -1,4 +1,5 @@
 using LoyaltyApi.Exceptions;
+using LoyaltyApi.Utilities;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -59,18 +60,33 @@ public class GlobalExceptionHandler
         }
         else if (exception is HttpRequestException)
         {
-            errorResponse = new { success = false, message = "An error occurred while processing your request. Please try again later." };
+            errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status500InternalServerError;
         }
         else if (exception is NullReferenceException)
         {
-            errorResponse = new { success = false, message = "A required resource was not found." };
+            errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status404NotFound;
         }
         else if (exception is SecurityTokenException)
         {
-            errorResponse = new { success = false, message = "Invalid token." };
+            errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status401Unauthorized;
+        }
+        else if (exception is ExpirePointsFailedException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status500InternalServerError;
+        }
+        else if (exception is ArgumentException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status400BadRequest;
+        }
+        else if (exception is MinimumPointsNotReachedException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status422UnprocessableEntity;
         }
         else
         {

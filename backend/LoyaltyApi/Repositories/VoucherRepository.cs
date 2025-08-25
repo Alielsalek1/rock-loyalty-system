@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace LoyaltyApi.Repositories
 {
     public class VoucherRepository(
-        FrontendDbContext dbContext,
+        RockDbContext dbContext,
         ApiUtility apiUtility,
         VoucherUtility voucherUtility,
         ILogger<VoucherRepository> logger) : IVoucherRepository
@@ -28,9 +28,7 @@ namespace LoyaltyApi.Repositories
 
             string result = await apiUtility.GenerateVoucher(voucher, restaurant, apiKey);
 
-            voucher.LongCode = result;
-
-            voucher.ShortCode = voucherUtility.ShortenVoucherCode(result);
+            voucher.ShortCode = result;
 
             await dbContext.Vouchers.AddAsync(voucher);
 
@@ -71,18 +69,17 @@ namespace LoyaltyApi.Repositories
             return response;
         }
 
-        public async Task<Voucher?> GetVoucherAsync(Voucher voucher)
+        public async Task<Voucher?> GetVoucherAsync(string shortCode)
         {
-            logger.LogInformation("Getting voucher {ShortCode} for customer {CustomerId} and restaurant {RestaurantId}",
-                voucher.ShortCode, voucher.CustomerId, voucher.RestaurantId);
-            return await dbContext.Vouchers.Where(v =>
-                v.ShortCode == voucher.ShortCode).FirstOrDefaultAsync();
+            logger.LogInformation("Getting voucher {ShortCode}",
+                shortCode);
+            return await dbContext.Vouchers.FindAsync(shortCode);
         }
 
         public async Task<Voucher> UpdateVoucherAsync(Voucher voucher)
         {
-            logger.LogInformation("Updating voucher {ShortCode} for customer {CustomerId} and restaurant {RestaurantId}",
-                voucher.ShortCode, voucher.CustomerId, voucher.RestaurantId);
+            logger.LogInformation("Updating voucher {ShortCode}",
+                voucher.ShortCode);
             dbContext.Update(voucher);
             await dbContext.SaveChangesAsync();
             return voucher;

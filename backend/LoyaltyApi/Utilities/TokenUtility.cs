@@ -24,5 +24,14 @@ namespace LoyaltyApi.Utilities
                 Role = Role.User
             };
         }
+        public string GetCacheKey(TokenType tokenType, int customerId, int restaurantId)
+        {
+            return tokenType switch
+            {
+                TokenType.ConfirmEmail => $"confirm_email_token_{customerId}_{restaurantId}",
+                TokenType.ForgotPasswordToken => $"forgot_password_token_{customerId}_{restaurantId}",
+                _ => throw new ArgumentException($"Unsupported token type for caching: {tokenType}")
+            };
+        }
     }
 }

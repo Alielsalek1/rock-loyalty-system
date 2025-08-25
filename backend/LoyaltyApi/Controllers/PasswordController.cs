@@ -60,7 +60,7 @@ public class PasswordController(
 
         if (user is null) return NotFound(new { success = false, message = "User not found" });
         _ = await passwordService.GetPasswordByCustomerIdAsync(user.Id, user.RestaurantId) ?? throw new ArgumentException("Password doesn't exist");
-        var forgotPasswordToken = await tokenService.GenerateForgotPasswordTokenAsync(user.Id, user.RestaurantId);
+        var forgotPasswordToken = tokenService.GenerateForgotPasswordToken(user.Id, user.RestaurantId);
         await emailService.SendEmailAsync(user.Email, $"Forgot Password for {user.Name} - {user.Email}",
             $"Your password reset link is {frontendOptions.Value.BaseUrl}/{requestBody.RestaurantId}/auth/forget-password/{forgotPasswordToken}",
             "Rock Loyalty System");
@@ -72,7 +72,7 @@ public class PasswordController(
     }
 
     /// <summary>
-    /// Updates the user's password.
+    /// Updates the user's password (Forget Password callback).
     /// </summary>
     /// <param name="token">The token used to validate the password update request.</param>
     /// <param name="requestBody">The request body containing the new password.</param>
@@ -100,13 +100,39 @@ public class PasswordController(
     public async Task<ActionResult> UpdatePasswordWithForgotPasswordToken(string token, [FromBody] UpdatePasswordRequestModel requestBody)
     {
         logger.LogInformation("Update password request for customer with {Token}", token);
-        if (!await tokenService.ValidateForgotPasswordTokenAsync(token)) return Unauthorized(new { success = false, message = "Invalid token" });
+        if (!tokenService.ValidateForgotPasswordToken(token)) return Unauthorized(new { success = false, message = "Invalid token" });
         Token forgotPasswordToken = tokenUtility.ReadToken(token);
         await passwordService.UpdatePasswordAsync(forgotPasswordToken.CustomerId, forgotPasswordToken.RestaurantId,
             requestBody.Password);
         return Ok(new { success = true, message = "Password updated" });
     }
 
+    /// <summary>
+    /// Updates the password for the authenticated user.
+    /// </summary>
+    /// <param name="requestBody">The request body containing the new password.</param>
+    /// <returns>An ActionResult indicating the result of the operation.</returns>
+    /// <remarks>
+    /// Sample request:
+    ///
+    ///     PUT /api/password
+    ///     {
+    ///         "password": "newpassword123"
+    ///     }
+    ///
+    /// Sample response:
+    ///
+    ///     200 OK
+    ///     {
+    ///         "success": true,
+    ///         "message": "Password updated"
+    ///     }
+    /// 
+    /// Authorization header with JWT Bearer token is required.
+    /// </remarks>
+    /// <response code="200">If the password is updated successfully.</response>
+    /// <response code="401">If the user is not authorized.</response>
+    /// <response code="500">If any other exception occurs.</response>
     [HttpPut]
     [Route("")]
     [Authorize(Roles = "User")]

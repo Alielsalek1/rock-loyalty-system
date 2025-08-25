@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LoyaltyApi.Repositories
 {
-    public class PasswordRepository(FrontendDbContext dbContext,
+    public class PasswordRepository(RockDbContext dbContext,
     ILogger<PasswordRepository> logger) : IPasswordRepository
     {
         public async Task<Password> CreatePasswordAsync(Password password)
@@ -14,8 +14,6 @@ namespace LoyaltyApi.Repositories
             logger.LogInformation("Password created successfully for customer {CustomerId} and restaurant {RestaurantId}", password.CustomerId, password.RestaurantId);
             return password;
         }
-
-
 
         public async Task<Password?> GetPasswordAsync(Password password)
         {

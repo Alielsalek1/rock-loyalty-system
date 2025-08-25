@@ -29,6 +29,7 @@ namespace LoyaltyApi
             Log.Logger.Information("Setting configurations");
 
             services.AddHttpContextAccessor();
+            services.AddMemoryCache();
             services.Configure<JwtOptions>(configuration.GetSection("JwtOptions"));
             services.Configure<FacebookOptions>(configuration.GetSection("FacebookOptions"));
             services.Configure<Config.GoogleOptions>(configuration.GetSection("GoogleOptions"));
@@ -94,6 +95,7 @@ namespace LoyaltyApi
             services.AddScoped<IRestaurantRepository, RestaurantRepository>();
             services.AddScoped<IRestaurantService, RestaurantService>();
             services.AddScoped<ICreditPointsTransactionRepository, CreditPointsTransactionRepository>();
+            services.AddScoped<ICreditPointsTransactionDetailRepository, CreditPointsTransactionDetailRepository>();
             services.AddScoped(provider =>
 
               new OAuth2Service(new HttpClient())
@@ -102,9 +104,8 @@ namespace LoyaltyApi
             services.AddScoped<VoucherUtility>();
             services.AddScoped<CreditPointsUtility>();
             services.AddScoped<TokenUtility>();
+            services.AddScoped<ParserUtility>();
             services.AddScoped<EmailService>();
-            services.AddScoped<ICreditPointsTransactionDetailRepository, CreditPointsTransactionDetailRepository>();
-            services.AddScoped<ICreditPointsTransactionRepository, CreditPointsTransactionRepository>();
             services.AddScoped<ICreditPointsTransactionService, CreditPointsTransactionService>();
             services.AddScoped<IPasswordHasher<Password>, PasswordHasher<Password>>();
             services.AddScoped<IPasswordRepository, PasswordRepository>();
@@ -142,7 +143,7 @@ namespace LoyaltyApi
                 Log.Logger.Information("Setting up SQLite database");
 
                 services.AddDbContext<RockDbContext>(options =>
-                    options.UseSqlite("Data Source=Dika.db"));
+                    options.UseSqlite("Data Source=DikaRockDbContext.db"));
 
                 Log.Logger.Information("Setting up SQLite database done");
             }
@@ -202,12 +203,69 @@ namespace LoyaltyApi
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>
             {
+                // Configure API Information
+                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Rock Loyalty System API",
+                    Version = "v1.0",
+                    Description = @"
+## Overview
+The Rock Loyalty System provides APIs for managing customer loyalty points and vouchers. Customers earn points on purchases and redeem points for vouchers.
+
+**Note**: All user management operations are handled through API calls to the Main System.
+
+## Integration Steps
+
+### 1. Synchronize All Core System Transactions
+Any transactions that happen in your Core system must be synchronized with the Rock Loyalty System:
+- **After successful payment**: Call `POST /api/admin/credit-points-transactions` to award points
+- **sync** immediately after Core system processes the payment
+
+### 2. Synchronize Voucher Usage
+Vouchers must be synchronized between both systems:
+- **Before accepting voucher**: Call `GET /api/vouchers/{voucherCode}` to validate
+- **After using voucher**: Call `PUT /api/vouchers/{voucherCode}/use` to mark as used
+- **Both systems must reflect** the voucher status change
+
+### 3. User Management Integration
+All user management operations (registration, authentication, profile updates) are handled through API calls to the Main System:
+- User data synchronization between Rock Loyalty System and Main System
+- User profile updates to Main System
+",
+                });
+
                 // Get the path to the XML documentation file
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
 
                 // Include the XML documentation in Swagger
                 options.IncludeXmlComments(xmlPath);
+
+                // Add JWT Bearer authentication to Swagger
+                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "Enter 'Bearer' [space] and then your valid token in the text input below.\n\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\""
+                });
+
+                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+                {
+                    {
+                        new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                        {
+                            Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                            {
+                                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
             });
             services.AddCors(options =>
             {

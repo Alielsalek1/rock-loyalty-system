@@ -129,7 +129,11 @@ public class VoucherController(
         string restaurantClaim = User.FindFirst("restaurantId")?.Value ?? throw new UnauthorizedAccessException();
         _ = int.TryParse(userClaim, out var userId);
         _ = int.TryParse(restaurantClaim, out var restaurantId);
-        var voucher = await voucherService.GetVoucherAsync(userId, restaurantId, shortCode);
+        
+        if (userId == 0 || restaurantId == 0)
+            throw new UnauthorizedAccessException();
+
+        var voucher = await voucherService.GetVoucherAsync(shortCode);
         var result = new
         {
             voucher.ShortCode,
@@ -156,7 +160,7 @@ public class VoucherController(
     /// <remarks>
     /// Sample request:
     ///
-    ///     GET /vouchers?pageNumber=1&pageSize=10
+    ///     GET /api/vouchers?pageNumber=1&amp;pageSize=10
     ///
     /// Sample response:
     ///
@@ -218,66 +222,67 @@ public class VoucherController(
         });
     }
 
-    /// <summary>
-    /// Get a voucher by short code for admin purposes.
-    /// </summary>
-    /// <param name="shortCode">The short code of the voucher.</param>
-    /// <param name="customerId">The customer ID associated with the voucher.</param>
-    /// <param name="restaurantId">The restaurant ID associated with the voucher.</param>
-    /// <returns>The long code of the voucher.</returns>
-    /// <response code="200">Voucher retrieved successfully.</response>
-    /// <response code="401">Unauthorized access.</response>
-    /// <response code="500">Server error.</response>
-    /// <remarks>
-    /// Sample request:
-    ///
-    ///     GET admin/restaurants/600/users/7/vouchers/ABCDE
-    ///
-    /// Sample response:
-    ///
-    ///     200 OK
-    ///     {
-    ///         "success": true,
-    ///         "message": "Voucher retrieved successfully",
-    ///         "data": {
-    ///             "voucher":
-    ///             {
-    ///                 "shortCode": "ABCDE",
-    ///                 "longCode": "1234567890",
-    ///                 "value": 100,
-    ///                 "isUsed": false
-    ///             }
-    ///         }
-    ///     }
-    ///
-    ///  **Admin Only Endpoint**
-    /// Authorization header with JWT Bearer token is required.
-    /// </remarks>
-    [HttpGet]
-    [Route("admin/vouchers/{shortCode}/restaurants/{restaurantId}/users/{customerId}")]
-    // [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> GetVoucherLongCode(int restaurantId, int customerId, string shortCode)
-    {
-        logger.LogInformation("Getting voucher {ShortCode} for customer {CustomerId} and restaurant {RestaurantId}",
-            shortCode, customerId, restaurantId);
+    // /// <summary>
+    // /// Get a voucher by short code for admin purposes.
+    // /// </summary>
+    // /// <param name="shortCode">The short code of the voucher.</param>
+    // /// <param name="customerId">The customer ID associated with the voucher.</param>
+    // /// <param name="restaurantId">The restaurant ID associated with the voucher.</param>
+    // /// <returns>The long code of the voucher.</returns>
+    // /// <response code="200">Voucher retrieved successfully.</response>
+    // /// <response code="401">Unauthorized access.</response>
+    // /// <response code="500">Server error.</response>
+    // /// <remarks>
+    // /// Sample request:
+    // ///
+    // ///     GET admin/restaurants/600/users/7/vouchers/ABCDE
+    // ///
+    // /// Sample response:
+    // ///
+    // ///     200 OK
+    // ///     {
+    // ///         "success": true,
+    // ///         "message": "Voucher retrieved successfully",
+    // ///         "data": {
+    // ///             "voucher":
+    // ///             {
+    // ///                 "shortCode": "ABCDE",
+    // ///                 "longCode": "1234567890",
+    // ///                 "value": 100,
+    // ///                 "isUsed": false
+    // ///             }
+    // ///         }
+    // ///     }
+    // ///
+    // /// Authorization header with Admin Options.
+    // /// </remarks>
+    // [HttpGet]
+    // [Route("admin/vouchers/{shortCode}/restaurants/{restaurantId}/users/{customerId}")]
+    // // [Authorize(Roles = "Admin")]
+    // public async Task<ActionResult> GetVoucherLongCode(int restaurantId, int customerId, string shortCode)
+    // {
+    //     logger.LogInformation("Getting voucher {ShortCode} for customer {CustomerId} and restaurant {RestaurantId}",
+    //         shortCode, customerId, restaurantId);
 
-        Voucher voucher = await voucherService.GetVoucherAsync(customerId, restaurantId, shortCode);
-        return Ok(new
-        {
-            success = true,
-            message = "Voucher retrieved successfully",
-            data = new
-            {
-                voucher = new
-                {
-                    voucher.ShortCode,
-                    voucher.LongCode,
-                    voucher.Value,
-                    voucher.IsUsed
-                }
-            }
-        });
-    }
+    //     Voucher voucher = await voucherService.GetVoucherAsync(customerId, restaurantId, shortCode);
+    //     return Ok(new
+    //     {
+    //         success = true,
+    //         message = "Voucher retrieved successfully",
+    //         data = new
+    //         {
+    //             voucher = new
+    //             {
+    //                 voucher.ShortCode,
+    //                 voucher.LongCode,
+    //                 voucher.Value,
+    //                 voucher.IsUsed
+    //             }
+    //         }
+    //     });
+    // }
+
+
     /// <summary>
     /// Sets a voucher iUsed.
     /// </summary>
@@ -310,19 +315,20 @@ public class VoucherController(
     ///         }
     ///     }
     ///
+    /// Authorization header with Admin Options.
     /// </remarks>
     [HttpPut]
     [Route("admin/vouchers/{shortCode}")]
     // [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> SetIsUsed([FromRoute] string shortCode, [FromBody] SetIsUsedRequestModel requestModel)
+    public async Task<ActionResult> SetIsUsed([FromRoute] string shortCode)
     {
         logger.LogInformation("Setting voucher {ShortCode} to used", shortCode);
 
-        Voucher voucher = await voucherService.SetIsUsedAsync(shortCode, requestModel);
+        Voucher voucher = await voucherService.SetIsUsedAsync(shortCode);
         return Ok(new
         {
             success = true,
-            message = $"Voucher isUsed set to {requestModel.IsUsed}",
+            message = $"Voucher isUsed set to {true}",
             data = new
             {
                 voucher = new
@@ -335,6 +341,7 @@ public class VoucherController(
             }
         });
     }
+
     /// <summary>
     /// Gets all vouchers for a customer with a specific restaurant ID.
     /// </summary>
@@ -349,7 +356,7 @@ public class VoucherController(
     /// <remarks>
     /// Sample request:
     ///
-    ///     GET /api/vouchers/admin/vouchers/restaurants/1/users/2?pageNumber=1&pageSize=10
+    ///     GET /api/admin/vouchers/restaurants/1/users/2?pageNumber=1&amp;pageSize=10
     ///
     /// Sample response:
     ///
@@ -379,6 +386,7 @@ public class VoucherController(
     ///         }
     ///     }
     ///
+    /// Authorization header with Admin Options.
     /// </remarks>
     [HttpGet]
     [Route("admin/vouchers/restaurants/{restaurantId}/users/{customerId}")]

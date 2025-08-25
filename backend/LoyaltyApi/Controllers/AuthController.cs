@@ -98,13 +98,21 @@ public class AuthController(
 
         Password? password =
             await passwordService.GetAndValidatePasswordAsync(user.Id, user.RestaurantId, loginBody.Password);
-        if (password is null || !password.ConfirmedEmail)
+        if (password is null)
             return Unauthorized(new { success = false, message = "Invalid password." });
+        if (!password.ConfirmedEmail)
+            return Unauthorized(new { success = false, message = "Email not confirmed." });
 
         var accessToken = await tokenService.GenerateAccessTokenAsync(user.Id, loginBody.RestaurantId, Role.User);
 
-        string refreshToken =
-            await tokenService.GenerateOrGetRefreshTokenAsync(user.Id, loginBody.RestaurantId, Role.User);
+        // Cookie-only approach: Always generate fresh refresh token
+        // Clear any existing refresh token cookie first
+        HttpContext.Response.Cookies.Delete("refreshToken");
+
+        // Generate new refresh token (no database storage)
+        string refreshToken = tokenService.GenerateRefreshToken(user.Id, loginBody.RestaurantId, Role.User);
+
+        // Set secure cookie with refresh token
         HttpContext.Response.Cookies.Append("refreshToken", refreshToken, jwtOptions.Value.JwtCookieOptions);
 
         return Ok(new
@@ -116,6 +124,40 @@ public class AuthController(
                 accessToken,
                 user
             }
+        });
+    }
+
+    /// <summary>
+    /// Logs out a user by clearing the refresh token cookie.
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    ///     POST /api/auth/logout
+    /// </remarks>
+    /// <returns>A confirmation message.</returns>
+    /// <response code="200">If the logout is successful.</response>
+    [HttpPost]
+    [Route("logout")]
+    public ActionResult Logout()
+    {
+        logger.LogInformation("User logout request");
+
+        // Clear refresh token cookie
+        HttpContext.Response.Cookies.Delete("refreshToken");
+
+        // Optionally, you can also expire it explicitly
+        HttpContext.Response.Cookies.Append("refreshToken", "", new CookieOptions
+        {
+            Expires = DateTimeOffset.UtcNow.AddDays(-1),
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict
+        });
+
+        return Ok(new
+        {
+            success = true,
+            message = "Logout successful"
         });
     }
 
@@ -162,7 +204,7 @@ public class AuthController(
         Token confirmEmailToken = tokenUtility.ReadToken(token);
         User? user = await userService.GetUserByIdAsync(confirmEmailToken.CustomerId, confirmEmailToken.RestaurantId) ?? throw new NullReferenceException("User not found");
         string accessToken = await tokenService.GenerateAccessTokenAsync(user.Id, user.RestaurantId, Role.User);
-        
+
         return Ok(new
         {
             success = true,

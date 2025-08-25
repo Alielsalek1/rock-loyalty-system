@@ -42,8 +42,7 @@ namespace LoyaltyApi.Controllers
         ///         "message": "Restaurant created"
         ///     }
         ///
-        /// **Admin Only Endpoint**
-        /// Authorization header with JWT Bearer token is required.
+        /// Authorization header with Admin Options.
         /// </remarks>
         /// <returns>Action result containing the response.</returns>
         [HttpPost]
@@ -93,7 +92,7 @@ namespace LoyaltyApi.Controllers
         ///     }
         /// 
         /// **Admin Only Endpoint**
-        /// Authorization header with JWT Bearer token is required.
+        /// Authorization header with Admin Options.
         /// </remarks>
         [HttpGet]
         [Route("admin/restaurants/{id}")]
@@ -140,8 +139,7 @@ namespace LoyaltyApi.Controllers
         ///         "message": "Restaurant updated successfully."
         ///     }
         /// 
-        /// **Admin Only Endpoint**
-        /// Authorization header with JWT Bearer token is required.
+        /// Authorization header with Admin Options.
         /// </remarks>
         [HttpPut]
         [Route("admin/restaurants/{id}")]
@@ -155,6 +153,41 @@ namespace LoyaltyApi.Controllers
             return Ok(new { success = true, message = "Restaurant Updated" });
         }
 
+        /// <summary>
+        /// Retrieves the restaurant information for the authenticated user.
+        /// </summary>
+        /// <returns>The restaurant information for the current user's restaurant.</returns>
+        /// <response code="200">The restaurant was retrieved successfully.</response>
+        /// <response code="401">If the user is not authorized.</response>
+        /// <response code="404">If the restaurant is not found.</response>
+        /// <response code="500">If any other exception occurs.</response>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     GET /api/restaurants/me
+        ///
+        /// Sample response:
+        ///
+        ///     200 OK
+        ///     {
+        ///         "success": true,
+        ///         "message": "Restaurant retrieved successfully.",
+        ///         "data": {
+        ///             "restaurant": {
+        ///                 "restaurantId": 1,
+        ///                 "creditPointsBuyingRate": 0.5,
+        ///                 "creditPointsSellingRate": 1.0,
+        ///                 "loyaltyPointsBuyingRate": 0,
+        ///                 "loyaltyPointsSellingRate": 0,
+        ///                 "creditPointsLifeTime": 1000,
+        ///                 "loyaltyPointsLifeTime": 0,
+        ///                 "voucherLifeTime": 86400000
+        ///             }
+        ///         }
+        ///     }
+        /// 
+        /// Authorization header with Admin Options..
+        /// </remarks>
         [HttpGet]
         [Route("restaurants/me")]
         [Authorize(Roles = "User")]

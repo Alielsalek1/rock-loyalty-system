@@ -49,19 +49,17 @@ namespace LoyaltyApi.Repositories
             return response;
         }
 
-        public async Task<Voucher?> GetVoucherAsync(Voucher voucher)
+        public async Task<Voucher?> GetVoucherAsync(string shortCode)
         {
-            logger.LogInformation("Getting voucher {ShortCode} for customer {CustomerId} and restaurant {RestaurantId}",
-                voucher.ShortCode, voucher.CustomerId, voucher.RestaurantId);
-            return await dbContext.Vouchers.Where(v =>
-                v.CustomerId == voucher.CustomerId && v.RestaurantId == v.RestaurantId &&
-                v.ShortCode == voucher.ShortCode).FirstOrDefaultAsync();
+            logger.LogInformation("Getting voucher {ShortCode}",
+                shortCode);
+            return await dbContext.Vouchers.FindAsync(shortCode);
         }
 
         public async Task<Voucher> UpdateVoucherAsync(Voucher voucher)
         {
-            logger.LogInformation("Updating voucher {ShortCode} for customer {CustomerId} and restaurant {RestaurantId}",
-                voucher.ShortCode, voucher.CustomerId, voucher.RestaurantId);
+            logger.LogInformation("Updating voucher {ShortCode}",
+                voucher.ShortCode);
             dbContext.Update(voucher);
             await dbContext.SaveChangesAsync();
             return voucher;

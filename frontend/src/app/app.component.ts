@@ -15,8 +15,8 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     const restId = window.location.pathname.split('/')[1];
 
-    if (restId) {
-      this.authService.autoLogin();
-    }
+    // if (restId) {
+    //   this.authService.autoLogin();
+    // }
   }
 }

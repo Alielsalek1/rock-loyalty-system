@@ -20,6 +20,27 @@ export class AuthService {
   currentUser: User;
   restaurantId: string;
 
+  private authenticationHandler(
+    email: string,
+    name: string,
+    phoneNumber: string,
+    userId: number,
+    token: string
+  ) {
+    const user: User = new User(token);
+    user.email = email;
+    user.name = name;
+    user.phonenumber = phoneNumber;
+    user.id = userId;
+
+    this.user.next(user);
+    this.currentUser = user;
+
+    localStorage.setItem('userInfo' + this.restaurantId, JSON.stringify(user));
+
+    this.setAccessTokenExpiry();
+  }
+
   user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
   constructor(private http: HttpClient, private router: Router) {
     this.user.subscribe((user) => {
@@ -32,35 +53,6 @@ export class AuthService {
   isAuth() {
     if (this.currentUser && this.currentUser?.token) return true;
     else return false;
-  }
-
-  autoLogOut(date: Date) {
-    const differenceInMs: number = date.getTime() - new Date().getTime();
-    setTimeout(() => {
-      this.LogOut();
-    }, differenceInMs);
-  }
-
-  autoLogin() {
-    const userData = JSON.parse(
-      localStorage.getItem('userInfo' + this.restaurantId)
-    );
-
-    if (!userData) {
-      return;
-    }
-    const token = userData._token;
-    const expireDate = new Date(userData._tokenExpirationDate);
-    const user: User = new User(token, expireDate);
-    user.email = userData.email;
-    user.name = userData.name;
-    user.phonenumber = userData.phonenumber;
-    user.id = userData.id;
-
-    if (user.token) {
-      this.user.next(user);
-      this.autoLogOut(expireDate);
-    }
   }
 
   LogOut() {
@@ -87,7 +79,7 @@ export class AuthService {
         phoneNumber: phoneNumber,
         password: password,
         restaurantId: this.restaurantId,
-      })
+      }, { withCredentials: true })
       .pipe(
         catchError((errorResponse: HttpErrorResponse) => {
           console.log(errorResponse);
@@ -132,7 +124,6 @@ export class AuthService {
           console.log(userInfo);
           let user: User = new User(
             this.currentUser.token,
-            this.currentUser.expirationDate
           );
           const email = userInfo.data.user.email;
           const userId = userInfo.data.user.id;
@@ -257,23 +248,7 @@ export class AuthService {
       );
   }
 
-  private authenticationHandler(
-    email: string,
-    name: string,
-    phoneNumber: string,
-    userId: number,
-    token: string
-  ) {
-    const user: User = new User(token);
-    user.email = email;
-    user.name = name;
-    user.phonenumber = phoneNumber;
-    user.id = userId;
-    this.user.next(user);
-    localStorage.setItem('userInfo' + this.restaurantId, JSON.stringify(user));
-  }
-
-  // admin services
+  // -------------------- admin services --------------------- (should be removed)
 
   adminLogin(email: string, password: string) {
     return this.http
@@ -310,6 +285,59 @@ export class AuthService {
     localStorage.removeItem('userInfo' + this.restaurantId);
     this.router.navigate([this.restaurantId, 'admin', 'login']);
   }
+
+  // -------------------- access token handlers ---------------------
+
+  setAccessTokenExpiry(): void {
+    try {
+
+      console.log("setting token expiry")
+
+      if (!this.currentUser || !this.currentUser.expirationDate) {
+        throw new Error('No current user or expiration date available');
+      }
+
+      const expiryTime = this.currentUser.expirationDate.getTime();
+      const timeUntilExpiry = expiryTime - new Date().getTime();
+
+      console.log(`Token expires at: ${this.currentUser.expirationDate}`);
+      console.log(`Time until expiry: ${Math.floor(timeUntilExpiry / 60000)} minutes`);
+
+      // Clear any existing timeout
+      const timeoutID = localStorage.getItem('tokenTimeoutId');
+
+      if (timeoutID != null) {
+        clearTimeout(Number(timeoutID));
+      }
+
+      const tokenTimeoutId = setTimeout(() => {
+        console.log('Access token expired, logging out user');
+        this.LogOut();
+      }, timeUntilExpiry);
+
+      localStorage.setItem('tokenTimeoutId', tokenTimeoutId.toString());
+
+    } catch (error) {
+      console.error('Error setting token expiry:', error);
+
+      // Fallback: 
+      const tokenTimeoutId = setTimeout(() => {
+        this.LogOut();
+      }, 15 * 60 * 1000);
+
+      console.log("fallback token is created: 15 minutes")
+      localStorage.setItem('tokenTimeoutId', tokenTimeoutId.toString());
+    }
+  }
+
+  // ----------------------------------------- refresh token handlers ----------------------------------------
+
+  hasRefreshToken(): boolean {
+    return document.cookie.includes('refreshToken=');
+  }
+
+
+
 }
 
 

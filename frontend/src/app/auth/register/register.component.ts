@@ -45,7 +45,8 @@ export class RegisterComponent implements OnInit {
           this.toastrService.success('confirmation email sent');
         },
         error: (err) => {
-          this.toastrService.error(err.message);
+          console.log(err);
+          this.toastrService.error(err.error.message);
         },
       });
   }
@@ -92,8 +93,8 @@ export class RegisterComponent implements OnInit {
         next: () => {
           this.redirect();
         },
-        error: (error: Error) => {
-          this.toastrService.error(error.message);
+        error: (error) => {
+          this.toastrService.error(error.error.message);
           this.loading = false;
         },
       });

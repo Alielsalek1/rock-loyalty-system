@@ -3,10 +3,8 @@ Admin Auth
 apiKey
 migrating to MySql
 
-REFR
+Alili Notes:
+1. ConfirmEmail isn't working.
+
 Amroosha notes:
-1. add a background instead of white background
-2. add shadowbox to all form boxes
-4. differentiate between voucher transaction, and points transaction (change styling)
-5. fix mobile responsive design for points tab.
-6. add confirm password to (forget password)
+1. OAuth2 should be changed to observer design pattern, components should be made.

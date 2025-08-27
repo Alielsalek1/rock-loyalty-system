@@ -30,8 +30,7 @@ export class ProfileComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log(this.myForm.value);
-    const user: User = new User("fakeToken");
+    const user: User = this.authService.currentUser;
     user.email = this.myForm.value.email;
     user.phonenumber = this.myForm.value.phoneNumber;
     user.name = this.myForm.value.name;

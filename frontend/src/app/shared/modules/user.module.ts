@@ -14,7 +14,7 @@ export class User {
     this.email = email;
     this.phonenumber = phonenumber;
     this.name = name;
-    this._token = token;
+    this.updateToken(token);
   }
 
   get token() {
@@ -24,7 +24,7 @@ export class User {
     return this._token;
   }
 
-  set token(token: string) {
+  updateToken(token: string) {
     try {
 
       if (!this._tokenDurationMs && !this._tokenExpirationDate) {

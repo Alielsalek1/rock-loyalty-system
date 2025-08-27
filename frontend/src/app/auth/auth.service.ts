@@ -289,19 +289,17 @@ export class AuthService {
   resetAccessToken(): void {
     try {
 
-      console.log("setting token expiry")
-
       if (!this.currentUser || !this.currentUser.expirationDate) {
+        console.log(this.currentUser);
         throw new Error('No current user or expiration date available');
       }
 
       const expiryTime = this.currentUser.expirationDate.getTime();
       const timeUntilExpiry = expiryTime - new Date().getTime();
 
-      console.log(`Token expires at: ${this.currentUser.expirationDate}`);
-      console.log(`Time until expiry: ${Math.floor(timeUntilExpiry / 60000)} minutes`);
+      // console.log(`Access Token expires at: ${this.currentUser.expirationDate}`);
+      // console.log(`Time until expiry: ${Math.floor(timeUntilExpiry / 60000)} minutes`);
 
-      // Clear any existing timeout
       const timeoutID = localStorage.getItem('tokenTimeoutId');
 
       if (timeoutID != null) {
@@ -317,14 +315,7 @@ export class AuthService {
 
     } catch (error) {
       console.error('Error setting token expiry:', error);
-
-      // Fallback: 
-      const tokenTimeoutId = setTimeout(() => {
-        this.LogOut();
-      }, 15 * 60 * 1000);
-
-      console.log("fallback token is created: 15 minutes")
-      localStorage.setItem('tokenTimeoutId', tokenTimeoutId.toString());
+      this.LogOut();
     }
   }
 
@@ -336,7 +327,7 @@ export class AuthService {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
     }
-    
+
     this.refreshTimer = setInterval(() => {
       this.checkAndRefreshToken(5);
     }, 60 * 1000);
@@ -344,12 +335,15 @@ export class AuthService {
 
   private getRefreshTokenExpiry(): Date | null {
     try {
-      const refreshToken = document.cookie.split('refreshToken=')[1]?.split(';')[0];
-      console.log('Refresh token from cookies:', refreshToken);
+      const refreshToken = document.cookie.split('refreshToken=')[1];
       if (!refreshToken) return null;
+
       const decoded: any = jwtDecode(refreshToken);
-      console.log('Decoded refresh token:', decoded);
+      const refreshTokenExpiration = new Date(decoded.exp * 1000);
+
+      if (refreshTokenExpiration < new Date()) return null;
       return new Date(decoded.exp * 1000);
+
     } catch {
       return null;
     }
@@ -358,34 +352,36 @@ export class AuthService {
   // main checking function
   private checkAndRefreshToken(minutes: number): void {
     const user = this.user.getValue();
-    
+
     if (!user) {
       console.log('No user found, stopping refresh timer');
       this.clearRefreshTimer();
       return;
     }
-    
+
     if (this.getRefreshTokenExpiry() === null) {
       console.log('Refresh token expired, logging out user');
       this.handleRefreshTokenExpiry();
       return;
     }
-    
+
     if (!user.expirationDate) {
       console.log('No expiration date found, refreshing token');
       this.refreshUserToken();
       return;
     }
-    
+
     const minutesBeforeExpiry = new Date(user.expirationDate.getTime() - minutes * 60 * 1000);
     const now = new Date();
-  
+
     if (now >= minutesBeforeExpiry) {
       console.log('Auto-refreshing token...');
       this.refreshUserToken();
+    } else {
+      console.log('No need to refresh token yet');
     }
   }
-  
+
   // clear refresh timer
   private clearRefreshTimer(): void {
     if (this.refreshTimer) {
@@ -401,33 +397,32 @@ export class AuthService {
       console.log('No user found for refresh');
       return;
     }
-  
+
     if (this.getRefreshTokenExpiry() === null) {
       console.log('Refresh token expired, logging out user');
       this.handleRefreshTokenExpiry();
       return;
     }
-  
+
     try {
       console.log('Extending token expiry...');
-      
-      // this is 7aram xd
+
       const currentToken = user.token || user.token;
-      user.token = currentToken;
-      
+      user.updateToken(currentToken);
+
       // Update references
       this.currentUser = user;
       this.user.next(user);
-      
+
       // Update storage
       localStorage.setItem('userInfo' + this.restaurantId, JSON.stringify(user));
-      
+
       // Reset timers
       this.resetAccessToken();
-      
+
       console.log('Token expiry extended successfully');
       console.log('New expiry:', user.expirationDate);
-      
+
     } catch (error) {
       console.error('Token refresh failed:', error);
       this.handleRefreshTokenExpiry();
@@ -436,12 +431,12 @@ export class AuthService {
 
   private handleRefreshTokenExpiry(): void {
     console.log('refresh token expired');
-    
+
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
       this.refreshTimer = null;
     }
-    
+
     this.LogOut();
   }
 

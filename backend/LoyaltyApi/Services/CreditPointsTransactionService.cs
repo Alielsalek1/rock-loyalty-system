@@ -238,7 +238,7 @@ public class CreditPointsTransactionService(
             // var currentDateTime = DateTime.Now;
             // Fetch all transactions that have expired based on the restaurant's lifetime
 
-            var currentDateTime = DateTime.Now;
+            var currentDateTime = DateTime.Now.AddHours(23).AddMinutes(56);
             var expiredTransactions =
                 await transactionRepository.GetExpiredTransactionsByCustomerAndRestaurantAsync(restaurant, user.Id, currentDateTime);
 

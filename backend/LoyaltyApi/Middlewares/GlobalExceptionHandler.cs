@@ -88,6 +88,11 @@ public class GlobalExceptionHandler
             errorResponse = new { success = false, message = exception.Message };
             statusCode = StatusCodes.Status422UnprocessableEntity;
         }
+        else if(exception is VoucherExpiredException)
+        {
+            errorResponse = new { success = false, message = exception.Message };
+            statusCode = StatusCodes.Status410Gone;
+        }
         else
         {
             errorResponse = new { success = false, message = exception.Message };

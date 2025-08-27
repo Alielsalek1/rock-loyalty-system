@@ -64,7 +64,6 @@ public class CreditPointsTransactionRepository(
 
     public async Task AddTransactionAsync(CreditPointsTransaction transaction)
     {
-        logger.LogInformation("Adding transaction {TransactionId}", transaction.TransactionId);
         await dbContext.CreditPointsTransactions.AddAsync(transaction);
         await dbContext.SaveChangesAsync();
     }

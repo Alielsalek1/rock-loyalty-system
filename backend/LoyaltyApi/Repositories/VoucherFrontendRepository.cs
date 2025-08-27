@@ -15,8 +15,7 @@ namespace LoyaltyApi.Repositories
     {
         public async Task<Voucher> CreateVoucherAsync(Voucher voucher, Restaurant restaurant)
         {
-            voucher.LongCode = Guid.NewGuid().ToString();
-            voucher.ShortCode = voucherUtility.ShortenVoucherCode(voucher.LongCode);
+            voucher.ShortCode = new Guid().ToString();
             await dbContext.Vouchers.AddAsync(voucher);
             await dbContext.SaveChangesAsync();
             return voucher;

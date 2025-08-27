@@ -42,12 +42,18 @@ namespace LoyaltyApi.Services
         public async Task<Password> CreatePasswordAsync(int customerId, int restaurantId, string password)
         {
             logger.LogInformation("Creating password for customer {customerId} and restaurant {restaurantId}", customerId, restaurantId);
-            if (password is null) throw new ArgumentException("Password cannot be null");
             Password passwordModel = new()
             {
                 CustomerId = customerId,
                 RestaurantId = restaurantId,
+                Value = null,
+                ConfirmedEmail = true // TODO: stubbed
             };
+
+            // for oauth2 users
+            if (password is null)
+                return await repository.CreatePasswordAsync(passwordModel);
+
             string hashedPassword = passwordHasher.HashPassword(passwordModel, password);
             passwordModel.Value = hashedPassword;
             return await repository.CreatePasswordAsync(passwordModel);

@@ -53,8 +53,12 @@ namespace LoyaltyApi.Services
             logger.LogTrace("Setting isUsed to {isUsed} for voucher {ShortCode}", true, shortCode);
             
             Voucher voucher = await voucherRepository.GetVoucherAsync(shortCode) ?? throw new Exception("Voucher not found");
+            Restaurant restaurant = await restaurantRepository.GetRestaurantById(voucher.RestaurantId) ?? throw new Exception("Restaurant not found");
+            if (voucher.DateOfCreation.AddMinutes(restaurant.VoucherLifeTime) < DateTime.Now)
+            {
+                throw new VoucherExpiredException("Voucher has expired");
+            }
             voucher.IsUsed = true;
-
             return await voucherRepository.UpdateVoucherAsync(voucher);
         }
     }

@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using LoyaltyApi.Exceptions;
+using LoyaltyApi.filters;
 using LoyaltyApi.Models;
 using LoyaltyApi.RequestModels;
 using LoyaltyApi.Services;
@@ -319,6 +320,7 @@ public class VoucherController(
     /// </remarks>
     [HttpPut]
     [Route("admin/vouchers/{shortCode}")]
+    [ApiKeyValidator]
     // [Authorize(Roles = "Admin")]
     public async Task<ActionResult> SetIsUsed([FromRoute] string shortCode)
     {
@@ -334,7 +336,6 @@ public class VoucherController(
                 voucher = new
                 {
                     voucher.ShortCode,
-                    voucher.LongCode,
                     voucher.Value,
                     voucher.IsUsed
                 }
@@ -399,7 +400,6 @@ public class VoucherController(
         var vouchers = paginationResult.Vouchers.Select(v => new
         {
             v.ShortCode,
-            v.LongCode,
             v.Value,
             v.IsUsed
         }).ToList();

@@ -10,8 +10,6 @@ namespace LoyaltyApi.Models
         public required int RestaurantId { get; set; }
         public required int CustomerId { get; set; }
 
-        public string? LongCode { get; set; }
-
         public string? ShortCode { get; set; }
         public int? Value { get; set; }
         public DateTime DateOfCreation { get; set; } = DateTime.Now;

@@ -138,7 +138,7 @@ namespace LoyaltyApi
 
             Log.Logger.Information("Configuring database");
             // Database setup
-            if (env.IsEnvironment("Testing"))
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing")
             {
                 Log.Logger.Information("Setting up SQLite database");
 
@@ -147,7 +147,7 @@ namespace LoyaltyApi
 
                 Log.Logger.Information("Setting up SQLite database done");
             }
-            else if (env.IsEnvironment("Frontend"))
+            else if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Frontend")
             {
                 Log.Logger.Information("Setting up SQLite database for FRONTEND");
 
@@ -157,7 +157,7 @@ namespace LoyaltyApi
 
                 Log.Logger.Information("Setting up SQLite database done");
             }
-            else if (env.IsDevelopment())
+            else if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
             {
                 Log.Logger.Information("Setting up MySQL database for DEVELOPMENT");
 
@@ -289,7 +289,7 @@ All user management operations (registration, authentication, profile updates) a
 
             app.UseIpRateLimiting();
 
-            if (env.IsDevelopment() || env.IsEnvironment("Frontend") || env.IsEnvironment("Testing"))
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development" || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Frontend" || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing")
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
@@ -297,8 +297,10 @@ All user management operations (registration, authentication, profile updates) a
 
             // app.UseMiddleware<ApiKeyValidatorMiddleware>();
 
-            if (env.IsEnvironment("Testing") || env.IsEnvironment("Frontend"))
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing"
+ || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Frontend")
             {
+                Log.Logger.Information("applying migrations to the dbcontext");
                 AddMigrationsAndUpdateDatabase(dbContext);
             }
 

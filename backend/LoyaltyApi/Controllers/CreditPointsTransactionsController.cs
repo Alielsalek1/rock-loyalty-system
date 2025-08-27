@@ -5,6 +5,7 @@ using LoyaltyApi.RequestModels;
 using LoyaltyApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using LoyaltyApi.Exceptions;
+using LoyaltyApi.filters;
 
 namespace LoyaltyApi.Controllers;
 
@@ -190,6 +191,7 @@ public class CreditPointsTransactionController(
     /// </remarks>
     [HttpPost]
     [Route("admin/credit-points-transactions")]
+    [ApiKeyValidator]
     // [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AddTransaction(CreateTransactionRequest transactionRequest)
     {

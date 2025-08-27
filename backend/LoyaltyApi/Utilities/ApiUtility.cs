@@ -38,6 +38,14 @@ namespace LoyaltyApi.Utilities
             string jsonBody = JsonSerializer.Serialize(body);
             StringContent content = new(jsonBody, Encoding.UTF8, "application/json");
             var result = await client.PostAsync($"{apiOptions.Value.BaseUrl}/api/CHKUSR", content);
+
+            if (!result.IsSuccessStatusCode)
+            {
+                string errorContent = await result.Content.ReadAsStringAsync();
+                logger.LogError("Failed to get API key. Status Code: {statusCode}, Response: {response}", result.StatusCode, errorContent);
+                throw new ApiUtilityException($"Operation Failed: {errorContent}");
+            }
+
             logger.LogInformation("Request made to get ApiKey. Response Status Code: {statusCode}", result.StatusCode);
             return await result.Content.ReadAsStringAsync();
         }
@@ -49,11 +57,11 @@ namespace LoyaltyApi.Utilities
             {
                 DTL = new[]
                 {
-                    new 
+                    new
                         {
                             VOCHNO = 1,// This is constant do not change it
                             VOCHVAL = voucher.Value,
-                            EXPDT = voucher.DateOfCreation.AddMinutes(restaurant.VoucherLifeTime).ToString("yyyy-MM-dd"),
+                            EXPDT = voucher.DateOfCreation.AddMinutes(restaurant.VoucherLifeTime).ToString("yyyy-MM-dd HH:mm"),
                         }
                 },
                 CNO = voucher.CustomerId,
@@ -63,12 +71,13 @@ namespace LoyaltyApi.Utilities
             string jsonBody = JsonSerializer.Serialize(body);
             StringContent content = new(jsonBody, Encoding.UTF8, "application/json");
             client.DefaultRequestHeaders.Add("XApiKey", apiKey);
-            var result = await client.PostAsync($"http://192.168.1.50:5001/api/HISCMD/ADDVOC", content);
+            var result = await client.PostAsync($"http://localhost:5021/api/HISCMD/ADDVOC", content);
             string responseContent = await result.Content.ReadAsStringAsync();
             logger.LogInformation("Request made to generate voucher. Response Message: {message}", responseContent);
-            if (responseContent.Replace(" ", "").Contains("ERR"))
+
+            if (responseContent.Replace(" ", "").Contains("ERR") || !result.IsSuccessStatusCode)
                 throw new ApiUtilityException($"Request to create voucher failed with message: {responseContent}");
-            
+
             var responseObject = JsonSerializer.Deserialize<List<String>>(responseContent) ?? throw new HttpRequestException("Request to create voucher failed");
             return responseObject.First();
         }
@@ -81,7 +90,7 @@ namespace LoyaltyApi.Utilities
             var json = await result.Content.ReadAsStringAsync();
             logger.LogInformation("Request made to get user. Response Message: .{message}.", json.ToString());
 
-            if (json.ToString().Replace(" ", "").Contains("ERR") || json.IsNullOrEmpty())
+            if (json.ToString().Replace(" ", "").Contains("ERR") || json.IsNullOrEmpty() || !result.IsSuccessStatusCode)
             {
                 logger.LogWarning("no user found");
                 return null;
@@ -129,17 +138,14 @@ namespace LoyaltyApi.Utilities
 
             // Send the POST request
             HttpResponseMessage response = await client.PostAsync($"http://192.168.1.50:5001/api/CONCMD/ADDCON", content);
-            
+
             logger.LogInformation("Request made to create user. Response Status Code: {statusCode}", response.StatusCode);
 
             // Check the response status and handle accordingly
             string message = await response.Content.ReadAsStringAsync();
             var result = parserUtility.UserParser(message);
             dynamic dynamicResult = result;
-            string parserResponse = dynamicResult.response;
             bool isSuccess = dynamicResult.success;
-            
-            logger.LogCritical("---------------->",parserResponse);
 
             if (isSuccess)
             {
@@ -182,8 +188,8 @@ namespace LoyaltyApi.Utilities
             // Send the POST request
             HttpResponseMessage response = await client.PostAsync($"{apiOptions.Value.BaseUrl}/api/CONCMD/ADDCON", content);
             string message = await response.Content.ReadAsStringAsync();
-            
-            if (message.Replace(" ", "").Contains("ERR"))
+
+            if (message.Replace(" ", "").Contains("ERR") || !response.IsSuccessStatusCode)
                 throw new ApiUtilityException($"Request to update user failed: {message}");
 
             logger.LogInformation("Request made to update user. Response Message: {message}", message);

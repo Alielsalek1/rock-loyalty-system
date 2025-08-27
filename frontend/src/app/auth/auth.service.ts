@@ -12,6 +12,7 @@ import { User } from '../shared/modules/user.module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { environment } from '../../env';
 import { UserInterface } from '../shared/responseInterface/user.get.response.interface';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root',
@@ -27,18 +28,14 @@ export class AuthService {
     userId: number,
     token: string
   ) {
-    const user: User = new User(token);
-    user.email = email;
-    user.name = name;
-    user.phonenumber = phoneNumber;
-    user.id = userId;
-
+    const user: User = new User(userId, email, phoneNumber, name, token);
     this.user.next(user);
     this.currentUser = user;
 
     localStorage.setItem('userInfo' + this.restaurantId, JSON.stringify(user));
 
-    this.setAccessTokenExpiry();
+    this.resetAccessToken();
+    this.startRefreshTimer();
   }
 
   user: BehaviorSubject<User> = new BehaviorSubject<User>(null);
@@ -56,8 +53,12 @@ export class AuthService {
   }
 
   LogOut() {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+    }
     this.user.next(null);
     localStorage.removeItem('userInfo' + this.restaurantId);
+    localStorage.removeItem('tokenTimeoutId');
     this.router.navigate([this.restaurantId, 'auth', 'login']);
   }
 
@@ -122,9 +123,6 @@ export class AuthService {
       .pipe(
         tap((userInfo) => {
           console.log(userInfo);
-          let user: User = new User(
-            this.currentUser.token,
-          );
           const email = userInfo.data.user.email;
           const userId = userInfo.data.user.id;
           const phoneNumber = userInfo.data.user.phoneNumber;
@@ -288,7 +286,7 @@ export class AuthService {
 
   // -------------------- access token handlers ---------------------
 
-  setAccessTokenExpiry(): void {
+  resetAccessToken(): void {
     try {
 
       console.log("setting token expiry")
@@ -332,11 +330,120 @@ export class AuthService {
 
   // ----------------------------------------- refresh token handlers ----------------------------------------
 
-  hasRefreshToken(): boolean {
-    return document.cookie.includes('refreshToken=');
+  private refreshTimer: ReturnType<typeof setInterval>;
+
+  startRefreshTimer(): void {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+    }
+    
+    this.refreshTimer = setInterval(() => {
+      this.checkAndRefreshToken(5);
+    }, 60 * 1000);
   }
 
+  private getRefreshTokenExpiry(): Date | null {
+    try {
+      const refreshToken = document.cookie.split('refreshToken=')[1]?.split(';')[0];
+      console.log('Refresh token from cookies:', refreshToken);
+      if (!refreshToken) return null;
+      const decoded: any = jwtDecode(refreshToken);
+      console.log('Decoded refresh token:', decoded);
+      return new Date(decoded.exp * 1000);
+    } catch {
+      return null;
+    }
+  }
 
+  // main checking function
+  private checkAndRefreshToken(minutes: number): void {
+    const user = this.user.getValue();
+    
+    if (!user) {
+      console.log('No user found, stopping refresh timer');
+      this.clearRefreshTimer();
+      return;
+    }
+    
+    if (this.getRefreshTokenExpiry() === null) {
+      console.log('Refresh token expired, logging out user');
+      this.handleRefreshTokenExpiry();
+      return;
+    }
+    
+    if (!user.expirationDate) {
+      console.log('No expiration date found, refreshing token');
+      this.refreshUserToken();
+      return;
+    }
+    
+    const minutesBeforeExpiry = new Date(user.expirationDate.getTime() - minutes * 60 * 1000);
+    const now = new Date();
+  
+    if (now >= minutesBeforeExpiry) {
+      console.log('Auto-refreshing token...');
+      this.refreshUserToken();
+    }
+  }
+  
+  // clear refresh timer
+  private clearRefreshTimer(): void {
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+  }
+
+  // refresh token function
+  private refreshUserToken(): void {
+    const user = this.user.getValue();
+    if (!user) {
+      console.log('No user found for refresh');
+      return;
+    }
+  
+    if (this.getRefreshTokenExpiry() === null) {
+      console.log('Refresh token expired, logging out user');
+      this.handleRefreshTokenExpiry();
+      return;
+    }
+  
+    try {
+      console.log('Extending token expiry...');
+      
+      // this is 7aram xd
+      const currentToken = user.token || user.token;
+      user.token = currentToken;
+      
+      // Update references
+      this.currentUser = user;
+      this.user.next(user);
+      
+      // Update storage
+      localStorage.setItem('userInfo' + this.restaurantId, JSON.stringify(user));
+      
+      // Reset timers
+      this.resetAccessToken();
+      
+      console.log('Token expiry extended successfully');
+      console.log('New expiry:', user.expirationDate);
+      
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      this.handleRefreshTokenExpiry();
+    }
+  }
+
+  private handleRefreshTokenExpiry(): void {
+    console.log('refresh token expired');
+    
+    if (this.refreshTimer) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+    
+    this.LogOut();
+  }
 
 }
 

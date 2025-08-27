@@ -7,12 +7,13 @@ import {
   Observable,
   tap,
   throwError,
+  finalize,
 } from 'rxjs';
 import { User } from '../shared/modules/user.module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { environment } from '../../env';
 import { UserInterface } from '../shared/responseInterface/user.get.response.interface';
-import { jwtDecode } from 'jwt-decode';
+
 
 @Injectable({
   providedIn: 'root',
@@ -34,7 +35,7 @@ export class AuthService {
 
     localStorage.setItem('userInfo' + this.restaurantId, JSON.stringify(user));
 
-    this.resetAccessToken();
+    this.setAccessTokenExpiry();
     this.startRefreshTimer();
   }
 
@@ -55,10 +56,20 @@ export class AuthService {
   LogOut() {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
     }
+
+    if (this.tokenTimeoutId) {
+      clearTimeout(this.tokenTimeoutId);
+      this.tokenTimeoutId = null;
+    }
+
+    this.refreshInProgress = false;
+
     this.user.next(null);
+    this.currentUser = null;
+
     localStorage.removeItem('userInfo' + this.restaurantId);
-    localStorage.removeItem('tokenTimeoutId');
     this.router.navigate([this.restaurantId, 'auth', 'login']);
   }
 
@@ -284,105 +295,139 @@ export class AuthService {
     this.router.navigate([this.restaurantId, 'admin', 'login']);
   }
 
-  // -------------------- access token handlers ---------------------
-
-  resetAccessToken(): void {
-    try {
-
-      if (!this.currentUser || !this.currentUser.expirationDate) {
-        console.log(this.currentUser);
-        throw new Error('No current user or expiration date available');
-      }
-
-      const expiryTime = this.currentUser.expirationDate.getTime();
-      const timeUntilExpiry = expiryTime - new Date().getTime();
-
-      // console.log(`Access Token expires at: ${this.currentUser.expirationDate}`);
-      // console.log(`Time until expiry: ${Math.floor(timeUntilExpiry / 60000)} minutes`);
-
-      const timeoutID = localStorage.getItem('tokenTimeoutId');
-
-      if (timeoutID != null) {
-        clearTimeout(Number(timeoutID));
-      }
-
-      const tokenTimeoutId = setTimeout(() => {
-        console.log('Access token expired, logging out user');
-        this.LogOut();
-      }, timeUntilExpiry);
-
-      localStorage.setItem('tokenTimeoutId', tokenTimeoutId.toString());
-
-    } catch (error) {
-      console.error('Error setting token expiry:', error);
-      this.LogOut();
-    }
-  }
-
-  // ----------------------------------------- refresh token handlers ----------------------------------------
+  // -------------------- access token & refresh token handlers ---------------------
 
   private refreshTimer: ReturnType<typeof setInterval>;
+  private tokenTimeoutId: any;
+  private refreshInProgress: boolean = false;
 
   startRefreshTimer(): void {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
     }
 
+    // Check every minute if refresh is needed
     this.refreshTimer = setInterval(() => {
-      this.checkAndRefreshToken(5);
+      this.checkAndRefreshToken(5); // Refresh 5 minutes before expiry
     }, 60 * 1000);
   }
 
-  private getRefreshTokenExpiry(): Date | null {
+  // Set access token expiry timeout
+  setAccessTokenExpiry(): void {
     try {
-      const refreshToken = document.cookie.split('refreshToken=')[1];
-      if (!refreshToken) return null;
+      if (!this.currentUser || !this.currentUser.expirationDate) {
+        console.log('No current user or expiration date available');
+        return;
+      }
 
-      const decoded: any = jwtDecode(refreshToken);
-      const refreshTokenExpiration = new Date(decoded.exp * 1000);
+      const expiryTime = this.currentUser.expirationDate.getTime();
+      const timeUntilExpiry = expiryTime - new Date().getTime();
 
-      if (refreshTokenExpiration < new Date()) return null;
-      return new Date(decoded.exp * 1000);
+      console.log(`Access Token expires at: ${this.currentUser.expirationDate}`);
+      console.log(`Time until expiry: ${Math.floor(timeUntilExpiry / 60000)} minutes`);
 
-    } catch {
-      return null;
+      if (this.tokenTimeoutId) {
+        clearTimeout(this.tokenTimeoutId);
+      }
+
+      this.tokenTimeoutId = setTimeout(() => {
+        console.log('Access token expired, attempting refresh...');
+
+        this.refreshAccessToken().subscribe({ // try to refresh token on expiry
+          next: () => console.log('Token refreshed due to expiry'),
+          error: () => {
+            console.log('Failed to refresh expired token, logging out');
+            this.LogOut();
+          }
+        });
+
+      }, timeUntilExpiry);
+
+    } catch (error) {
+      console.error('Error setting access token expiry:', error);
+      this.LogOut();
     }
   }
 
-  // main checking function
+  // Main checking function for refresh
   private checkAndRefreshToken(minutes: number): void {
+    if (this.refreshInProgress) {
+      console.log('Refresh already in progress, skipping...');
+      return;
+    }
+
+    console.log('Checking if token needs refresh...');
+
     const user = this.user.getValue();
-
-    if (!user) {
-      console.log('No user found, stopping refresh timer');
-      this.clearRefreshTimer();
-      return;
-    }
-
-    if (this.getRefreshTokenExpiry() === null) {
-      console.log('Refresh token expired, logging out user');
-      this.handleRefreshTokenExpiry();
-      return;
-    }
-
-    if (!user.expirationDate) {
-      console.log('No expiration date found, refreshing token');
-      this.refreshUserToken();
-      return;
-    }
-
     const minutesBeforeExpiry = new Date(user.expirationDate.getTime() - minutes * 60 * 1000);
     const now = new Date();
 
     if (now >= minutesBeforeExpiry) {
-      console.log('Auto-refreshing token...');
-      this.refreshUserToken();
-    } else {
-      console.log('No need to refresh token yet');
+      console.log('Token expiring soon, proactively refreshing...');
+      this.refreshAccessToken().subscribe({
+        next: () => console.log('Proactive token refresh successful'),
+        error: (error) => {
+          console.error('Proactive token refresh failed:', error);
+          this.handleRefreshTokenExpiry();
+        }
+      });
     }
   }
 
-  // clear refresh timer
+  // HTTP-based token refresh using backend endpoint
+  refreshAccessToken(): Observable<any> {
+    if (this.refreshInProgress) {
+      console.log('Refresh already in progress');
+      return throwError(() => new Error('Refresh in progress'));
+    }
+
+    this.refreshInProgress = true;
+
+    return this.http.put(
+      `${environment.apiUrl}/api/tokens/refresh-tokens`,
+      {}, 
+      {
+        withCredentials: true,
+        headers: {
+          'Authorization': `${this.currentUser.token}` // Current access token for auth
+        }
+      }
+    ).pipe(
+      tap((response: any) => {
+        console.log('Token refresh successful');
+
+        const user = this.user.getValue();
+        if (user && response.data?.accessToken) {
+          user.updateToken(response.data.accessToken);
+
+          this.currentUser = user;
+          this.user.next(user);
+          localStorage.setItem('userInfo' + this.restaurantId, JSON.stringify(user));
+
+          // Reset access token expiry timer
+          this.setAccessTokenExpiry();
+
+          console.log('User updated with new access token');
+          console.log('New token expiry:', user.expirationDate);
+        }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('Token refresh failed:', error);
+
+        if (error.status === 401 || error.status === 403) {
+          console.log('Refresh token expired or invalid');
+          this.handleRefreshTokenExpiry();
+        }
+
+        return throwError(() => new Error('Token refresh failed'));
+      }),
+      finalize(() => {
+        this.refreshInProgress = false;
+      })
+    );
+  }
+
+  // Clear refresh timer
   private clearRefreshTimer(): void {
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
@@ -390,56 +435,22 @@ export class AuthService {
     }
   }
 
-  // refresh token function
-  private refreshUserToken(): void {
-    const user = this.user.getValue();
-    if (!user) {
-      console.log('No user found for refresh');
-      return;
-    }
-
-    if (this.getRefreshTokenExpiry() === null) {
-      console.log('Refresh token expired, logging out user');
-      this.handleRefreshTokenExpiry();
-      return;
-    }
-
-    try {
-      console.log('Extending token expiry...');
-
-      const currentToken = user.token || user.token;
-      user.updateToken(currentToken);
-
-      // Update references
-      this.currentUser = user;
-      this.user.next(user);
-
-      // Update storage
-      localStorage.setItem('userInfo' + this.restaurantId, JSON.stringify(user));
-
-      // Reset timers
-      this.resetAccessToken();
-
-      console.log('Token expiry extended successfully');
-      console.log('New expiry:', user.expirationDate);
-
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      this.handleRefreshTokenExpiry();
-    }
-  }
-
+  // Handle refresh token expiry
   private handleRefreshTokenExpiry(): void {
-    console.log('refresh token expired');
+    console.log('Refresh token expired, cleaning up session');
 
     if (this.refreshTimer) {
       clearInterval(this.refreshTimer);
       this.refreshTimer = null;
     }
 
+    if (this.tokenTimeoutId) {
+      clearTimeout(this.tokenTimeoutId);
+      this.tokenTimeoutId = null;
+    }
+
+    this.refreshInProgress = false;
     this.LogOut();
   }
 
 }
-
-

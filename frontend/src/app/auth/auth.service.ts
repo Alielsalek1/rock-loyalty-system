@@ -383,18 +383,19 @@ export class AuthService {
 
     this.refreshInProgress = true;
 
+    const refreshAccessToken = this.getRefreshTokenFromCookie();
+
     return this.http.put(
       `${environment.apiUrl}/api/tokens/refresh-tokens`,
       {}, 
       {
         withCredentials: true,
         headers: {
-          'Authorization': `${this.currentUser.token}` // Current access token for auth
+          'Authorization': `Bearer ${refreshAccessToken}` // Current access token for auth
         }
       }
     ).pipe(
       tap((response: any) => {
-        console.log('Token refresh successful');
 
         const user = this.user.getValue();
         if (user && response.data?.accessToken) {
@@ -406,9 +407,6 @@ export class AuthService {
 
           // Reset access token expiry timer
           this.setAccessTokenExpiry();
-
-          console.log('User updated with new access token');
-          console.log('New token expiry:', user.expirationDate);
         }
       }),
       catchError((error: HttpErrorResponse) => {
@@ -427,14 +425,6 @@ export class AuthService {
     );
   }
 
-  // Clear refresh timer
-  private clearRefreshTimer(): void {
-    if (this.refreshTimer) {
-      clearInterval(this.refreshTimer);
-      this.refreshTimer = null;
-    }
-  }
-
   // Handle refresh token expiry
   private handleRefreshTokenExpiry(): void {
     console.log('Refresh token expired, cleaning up session');
@@ -451,6 +441,25 @@ export class AuthService {
 
     this.refreshInProgress = false;
     this.LogOut();
+  }
+
+  // helper gets rfresh token
+  private getRefreshTokenFromCookie(): string | null {
+    try {
+      const cookies = document.cookie.split(';');
+      const refreshTokenCookie = cookies.find(cookie => 
+        cookie.trim().startsWith('refreshToken=')
+      );
+      
+      if (refreshTokenCookie) {
+        return refreshTokenCookie.split('=')[1].trim();
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error reading refresh token from cookie:', error);
+      return null;
+    }
   }
 
 }

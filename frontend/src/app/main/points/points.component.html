@@ -24,9 +24,11 @@
                   <strong>Transaction Value:</strong>
                   {{ point.transactionValue }} L.E
                 </p>
+              @if (point.points >= 0) {
                 <p class="card-text">
                   <strong>Status:</strong>
                   <span
+                    id="status"
                     [ngClass]="{
                       'text-danger fw-bold': point.isExpired,
                       'text-success': !point.isExpired
@@ -35,9 +37,10 @@
                     {{ point.isExpired ? "Expired" : "Valid" }}
                   </span>
                 </p>
-                <p class="card-text">
+                <p class="card-text" id="points">
                   <strong>Points:</strong> {{ point.points }}
                 </p>
+              }
               </div>
               <div class="card-footer text-muted">
                 {{ point.transactionDate | date }}

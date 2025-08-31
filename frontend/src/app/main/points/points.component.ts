@@ -75,6 +75,7 @@ export class PointsComponent {
   ngOnDestroy(): void {
     this.PointsSub.unsubscribe();
   }
+  
   private resetPage() {
     this.pointsService.getPointsList(1, this.itemsPerPage).subscribe({
       next: () => { },

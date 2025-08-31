@@ -31,7 +31,7 @@ export class User {
         this._token = token;
 
         const decodedToken: any = jwtDecode(token);
-        this._tokenExpirationDate = new Date(decodedToken.exp * 1000);
+        this._tokenExpirationDate = new Date(decodedToken.exp * 1000); 
 
         const issuedAt = decodedToken.iat ? decodedToken.iat * 1000 : new Date().getTime();
         this._tokenDurationMs = (decodedToken.exp * 1000) - issuedAt;

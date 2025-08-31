@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: loyalty_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_123
+      MYSQL_DATABASE: loyalty_db
+      MYSQL_USER: loyalty_user
+      MYSQL_PASSWORD: loyalty_pass_123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - loyalty_network
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # phpMyAdmin for MySQL management
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: loyalty_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: loyalty_user
+      PMA_PASSWORD: loyalty_pass_123
+      MYSQL_ROOT_PASSWORD: root_password_123
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - loyalty_network
+
+  # Optional: Adminer (alternative to phpMyAdmin)
+  adminer:
+    image: adminer:latest
+    container_name: loyalty_adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mysql
+    networks:
+      - loyalty_network
+
+volumes:
+  mysql_data:
+    driver: local
+    environment:
+
+networks:
+  loyalty_network:
+    driver: bridge
+      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=loyalty_db;Uid=loyalty_user;Pwd=loyalty_pass_123;"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - loyalty_network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  loyalty_network:
+    driver: bridge

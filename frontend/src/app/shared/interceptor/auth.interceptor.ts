@@ -12,6 +12,7 @@ export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
   next: HttpHandlerFn
 ) => {
+
   const authService: AuthService = inject(AuthService);
   const user: User = authService.user.getValue();
   let modifiedReq: HttpRequest<any> = req;

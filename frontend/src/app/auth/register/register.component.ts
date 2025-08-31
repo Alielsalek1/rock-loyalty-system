@@ -54,19 +54,19 @@ export class RegisterComponent implements OnInit {
   onGoogleLogin() {
     this.loading = true;
     this.loadingMessage = 'waiting for google signin';
-    this.googleAuth
-      .login()
-      .then((response) => {
-        console.log('sucssesfully logged', response);
-        const token = response.authentication.accessToken;
-        this.loginGoogle(token);
-      })
-      .catch((error) => {
-        this.toastrService.error('login with google failed');
-      })
-      .finally(() => {
+  
+    this.googleAuth.login().subscribe({
+      next: (response) => {
+        this.toastrService.success('Login Successful: redirecting...');
+        this.loginGoogle(response.credential);
         this.loading = false;
-      });
+      },
+      error: (error) => {
+        this.toastrService.error('Google login failed');
+        this.toastrService.error(error.message);
+        this.loading = false;
+      }
+    });
   }
 
   onFacebokLogin() {

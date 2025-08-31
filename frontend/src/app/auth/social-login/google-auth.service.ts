@@ -1,52 +1,76 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../env';
-
-declare var google: any;
-
-// TODO: THIS IMPLEMENTATION SHOULD BE CHANGED ENTIRELY INTO OBSERVABLE PATTERN
+import { Observable, BehaviorSubject, from, throwError, of } from 'rxjs';
+import { map, switchMap, catchError, tap } from 'rxjs/operators';
+import { GoogleUserInfo, AuthenticationResult } from './google-interfaces';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GoogleAuthService {
-  private initialized = false;
+  private readonly scriptLoaded$ = new BehaviorSubject<boolean>(false);
+  private readonly userProfile$ = new BehaviorSubject<GoogleUserInfo | null>(null);
+  private readonly isAuthenticated$ = new BehaviorSubject<boolean>(false);
 
   constructor() {
-    this.loadGoogleScript();
+    this.loadGoogleScript().subscribe();
   }
 
-  private loadGoogleScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (this.initialized) {
-        resolve();
-        return;
-      }
+  // Public observables
+  get scriptLoaded(): Observable<boolean> {
+    return this.scriptLoaded$.asObservable();
+  }
 
-      // Check if script already exists
-      const existingScript = document.querySelector('script[src*="gsi/client"]');
-      if (existingScript) {
-        this.initializeGoogleAuth().then(resolve).catch(reject);
-        return;
-      }
+  get userProfile(): Observable<GoogleUserInfo | null> {
+    return this.userProfile$.asObservable();
+  }
 
+  get isAuthenticated(): Observable<boolean> {
+    return this.isAuthenticated$.asObservable();
+  }
+
+  // Load Google script as Observable
+  private loadGoogleScript(): Observable<boolean> {
+    if (this.scriptLoaded$.value) {
+      return of(true);
+    }
+
+    const existingScript = document.querySelector('script[src*="gsi/client"]');
+    if (existingScript) {
+      return this.initializeGoogleAuth();
+    }
+
+    return new Observable<boolean>(observer => {
       const script = document.createElement('script');
       script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
       script.defer = true;
+
       script.onload = () => {
-        this.initializeGoogleAuth().then(resolve).catch(reject);
+        this.initializeGoogleAuth().subscribe({
+          next: (initialized) => {
+            observer.next(initialized);
+            observer.complete();
+          },
+          error: (error) => observer.error(error)
+        });
       };
-      script.onerror = () => reject(new Error('Failed to load Google Identity Services'));
+
+      script.onerror = () => {
+        observer.error(new Error('Failed to load Google Identity Services'));
+      };
+
       document.head.appendChild(script);
     });
   }
 
-  private async initializeGoogleAuth(): Promise<void> {
-    return new Promise((resolve) => {
+  private initializeGoogleAuth(): Observable<boolean> {
+    return new Observable<boolean>(observer => {
       const checkGoogle = () => {
-        if (typeof google !== 'undefined' && google.accounts) {
-          this.initialized = true;
-          resolve();
+        if (this.isGoogleLoaded()) {
+          this.scriptLoaded$.next(true);
+          observer.next(true);
+          observer.complete();
         } else {
           setTimeout(checkGoogle, 100);
         }
@@ -55,90 +79,94 @@ export class GoogleAuthService {
     });
   }
 
-  async login(): Promise<any> {
-    await this.loadGoogleScript();
-    
-    // Debug information
-    console.log('Current origin:', window.location.origin);
-    console.log('Client ID:', environment.googleClientId);
-    
-    return new Promise((resolve, reject) => {
-      // Try using the popup-based sign-in instead of One Tap
-      if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
-        const client = google.accounts.oauth2.initTokenClient({
+  private isGoogleLoaded(): boolean {
+    return !!(window.google && window.google.accounts && window.google.accounts.oauth2);
+  }
+
+  // main login method
+  login(): Observable<AuthenticationResult> {
+    return this.ensureScriptLoaded().pipe(
+      switchMap(() => this.performLogin()),
+      switchMap((tokenResponse) => this.getUserInfo(tokenResponse.access_token).pipe(
+        map(userInfo => ({
+          authentication: {
+            accessToken: tokenResponse.access_token,
+            idToken: tokenResponse.access_token
+          },
+          credential: tokenResponse.access_token,
+          userInfo
+        }))
+      )),
+      tap((result) => {
+        this.userProfile$.next(result.userInfo || null);
+        this.isAuthenticated$.next(true);
+      }),
+      catchError(error => {
+        console.error('Google login failed:', error);
+        this.isAuthenticated$.next(false);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  private ensureScriptLoaded(): Observable<boolean> {
+    return this.scriptLoaded$.value ? of(true) : this.loadGoogleScript();
+  }
+
+
+  private performLogin(): Observable<google.accounts.oauth2.TokenResponse> {
+    return new Observable<google.accounts.oauth2.TokenResponse>(observer => {
+      if (!this.isGoogleLoaded()) {
+        observer.error(new Error('Google API not loaded'));
+        return;
+      }
+
+      try {
+        const client = window.google!.accounts.oauth2.initTokenClient({
           client_id: environment.googleClientId,
-          scope: 'email profile',
-          callback: (response: any) => {
-            console.log('OAuth2 response:', response);
-            if (response.access_token) {
-              resolve({
-                authentication: {
-                  accessToken: response.access_token,
-                  idToken: response.access_token
-                },
-                credential: response.access_token
-              });
+          scope: 'openid profile email',
+          callback: (tokenResponse: google.accounts.oauth2.TokenResponse) => {
+            if (tokenResponse.access_token) {
+              observer.next(tokenResponse);
+              observer.complete();
             } else {
-              reject(new Error('No access token received'));
+              observer.error(new Error('No access token received'));
             }
           },
         });
-        
-        client.requestAccessToken();
-      } else {
-        // Fallback to One Tap
-        google.accounts.id.initialize({
-          client_id: environment.googleClientId,
-          callback: (response: any) => {
-            console.log('Google sign-in success:', response);
-            resolve({
-              authentication: {
-                accessToken: response.credential,
-                idToken: response.credential
-              },
-              credential: response.credential
-            });
-          },
-          auto_select: false,
-          cancel_on_tap_outside: true
-        });
 
-        // Use One Tap to show the sign-in prompt
-        google.accounts.id.prompt((notification: any) => {
-          console.log('Google prompt notification:', notification);
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            console.log('Google One Tap not available, reason:', notification.getNotDisplayedReason());
-            reject(new Error('Google One Tap not available'));
-          }
-        });
+        client.requestAccessToken();
+      } catch (error) {
+        observer.error(error);
       }
     });
   }
 
-  async renderButton(element: HTMLElement): Promise<void> {
-    await this.loadGoogleScript();
-    
-    return new Promise((resolve, reject) => {
-      google.accounts.id.initialize({
-        client_id: environment.googleClientId,
-        callback: (response: any) => {
-          // This will be handled by the component
-          console.log('Google sign-in response:', response);
-        },
-        auto_select: false,
-        cancel_on_tap_outside: true
-      });
+  private getUserInfo(accessToken: string): Observable<GoogleUserInfo> {
+    const userInfoUrl = `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${accessToken}`;
 
-      google.accounts.id.renderButton(element, {
-        type: 'standard',
-        theme: 'outline',
-        size: 'large',
-        text: 'signin_with',
-        shape: 'rectangular',
-        width: 250
-      });
+    return from(fetch(userInfoUrl)).pipe(
+      switchMap(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch user info');
+        }
+        return from(response.json());
+      }),
+      map((userInfo: GoogleUserInfo) => userInfo)
+    );
+  }
 
-      resolve();
+  logout(): Observable<void> {
+    return new Observable<void>(observer => {
+      if (this.isGoogleLoaded()) {
+        window.google!.accounts.id.disableAutoSelect();
+      }
+
+      this.userProfile$.next(null);
+      this.isAuthenticated$.next(false);
+
+      observer.next();
+      observer.complete();
     });
   }
 }

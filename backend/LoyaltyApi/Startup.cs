@@ -135,7 +135,6 @@ namespace LoyaltyApi
 
             Log.Logger.Information("Configuring services in container done");
 
-
             Log.Logger.Information("Configuring database");
             // Database setup
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing")
@@ -295,14 +294,14 @@ All user management operations (registration, authentication, profile updates) a
                 app.UseSwaggerUI();
             }
 
-            // app.UseMiddleware<ApiKeyValidatorMiddleware>();
+            // app.UseMiddleware<ApiKeyValidatorMiddleware>;
 
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing"
- || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Frontend")
-            {
-                Log.Logger.Information("applying migrations to the dbcontext");
-                AddMigrationsAndUpdateDatabase(dbContext);
-            }
+            // if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing"
+            //  || Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Frontend")
+            // {
+            //     Log.Logger.Information("applying migrations to the dbcontext");
+            //     AddMigrationsAndUpdateDatabase(dbContext);
+            // }
 
             app.UseStatusCodePages(async context =>
             {

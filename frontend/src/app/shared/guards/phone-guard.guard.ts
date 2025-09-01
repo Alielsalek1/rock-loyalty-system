@@ -7,8 +7,7 @@ export const phoneGuardGuard: CanActivateFn = (route, state) => {
   const router: Router = inject(Router);
   const user = authService.currentUser;
   const restId = window.location.pathname.split('/')[1];
-  console.log(restId);
-  console.log('phone guard');
+
   if (user.phonenumber) {
     return true;
   } else {

@@ -9,9 +9,17 @@ export const ApiKeyInterceptor: HttpInterceptorFn = (
   req: HttpRequest<any>,
   next: HttpHandlerFn
 ) => {
-  let modifiedReq: HttpRequest<any> = req;
-  modifiedReq = req.clone({
-    headers: req.headers.append('X-ApiKey', `${environment.apiKey}`),
-  });
-  return next(modifiedReq);
-};
+  const isBackendRequest = req.url.includes(environment.apiUrl) ||
+    req.url.startsWith('http://localhost:5152') ||
+    req.url.startsWith('https://localhost:7219');
+
+  if (isBackendRequest) {
+    const modifiedReq = req.clone({
+      headers: req.headers.set('x-apikey', environment.apiKey)
+    });
+    return next(modifiedReq);
+  }
+
+  // for google Auth2
+  return next(req);
+}

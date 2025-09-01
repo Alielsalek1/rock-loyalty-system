@@ -156,21 +156,6 @@ namespace LoyaltyApi.Repositories
             }
         }
 
-        public async Task<Token?> GetRefreshTokenAsync(Token token)
-        {
-            var refreshToken = await dbContext.Tokens.FirstOrDefaultAsync(t =>
-                t.CustomerId == token.CustomerId && t.RestaurantId == token.RestaurantId &&
-                t.TokenType == TokenType.RefreshToken);
-
-            if (refreshToken == null)
-                return null;
-
-            if (ValidateToken(refreshToken) == true)
-                return refreshToken;
-
-            return null;
-        }
-
         public string GenerateRefreshToken(Token token)
         {
             JwtSecurityToken generatedToken = GenerateToken(token);

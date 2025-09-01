@@ -21,7 +21,6 @@ namespace LoyaltyApi.Data
                 optionsBuilder.UseSqlite("Data Source=DikaRockDbContext.db");
             }
         }
-        public DbSet<Token> Tokens { get; set; }
 
         public DbSet<CreditPointsTransaction> CreditPointsTransactions { get; set; }
 
@@ -37,15 +36,6 @@ namespace LoyaltyApi.Data
             modelBuilder.Entity<Restaurant>()
                 .HasKey(r => r.RestaurantId);
 
-            modelBuilder.Entity<Token>()
-                .HasKey(x => new { x.CustomerId, x.RestaurantId, x.TokenValue });
-
-            modelBuilder.Entity<Token>()
-                .Property(x => x.TokenType)
-                .HasConversion<string>();
-
-            modelBuilder.Entity<Token>()
-                .HasIndex(t => t.TokenValue);
 
             modelBuilder.Entity<Voucher>()
                 .HasKey(x => x.ShortCode);

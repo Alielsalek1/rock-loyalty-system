@@ -20,8 +20,7 @@ namespace LoyaltyApi.Repositories
 
         bool ValidateForgotPasswordToken(Token token);
 
-        Task<Token?> GetRefreshTokenAsync(Token token);
-
+     
         bool IsCacheContainsToken(TokenType tokenType, int customerId, int restaurantId);
 
         Token? GetCachedTokenForInspection(TokenType tokenType, int customerId, int restaurantId);

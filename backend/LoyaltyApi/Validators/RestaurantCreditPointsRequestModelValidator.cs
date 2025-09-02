@@ -10,7 +10,7 @@ public class RestaurantCreditPointsRequestModelValidator : AbstractValidator<Res
         // At least one property should be provided for update
         RuleFor(x => x)
             .Must(x => x.CreditPointsBuyingRate.HasValue || x.CreditPointsSellingRate.HasValue || 
-                      x.CreditPointsLifeTime.HasValue || x.VoucherLifeTime.HasValue)
+                      x.CreditPointsLifeTime.HasValue || x.VoucherLifeTime.HasValue || x.VoucherMinValue.HasValue)
             .WithMessage("At least one property must be provided for update.");
         
         // If rates are provided, validate them

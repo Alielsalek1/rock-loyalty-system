@@ -27,23 +27,26 @@ namespace LoyaltyApi.Utilities
 
             var body = new
             {
-                acc = isDevelopment || isTesting ? "202" : restaurantId ?? throw new ArgumentException("Resturant ID is missing"), // change acc for different restaurants
-                usrid = apiOptions.Value.UserId,
-                pass = apiOptions.Value.Password,
-                lng = "ENG",
-                // SrcApp = "WEBAPP",
-                // SrcVer = 1.00
-
+                acc = "202",
+                usrid = "mcs",
+                pass = "AN#$2025",
+                // lng = "string",
+                // thm = "string",
+                // macid = "string",
+                // fireBaseID = "string",
+                // msg = "string",
+                // auth = 0,
+                // srcapp = "string",
+                // srcver = 0
             };
             string jsonBody = JsonSerializer.Serialize(body);
             StringContent content = new(jsonBody, Encoding.UTF8, "application/json");
-            var result = await client.PostAsync($"{apiOptions.Value.BaseUrl}/api/CHKUSR", content);
-
-            if (!result.IsSuccessStatusCode)
+            var result = await client.PostAsync($"http://192.168.1.51:5000/api/CHKUSR", content);
+            string responseContent = await result.Content.ReadAsStringAsync();
+            if (!result.IsSuccessStatusCode || responseContent.Replace(" ", "").Contains("ERR"))
             {
-                string errorContent = await result.Content.ReadAsStringAsync();
-                logger.LogError("Failed to get API key. Status Code: {statusCode}, Response: {response}", result.StatusCode, errorContent);
-                throw new ApiUtilityException($"Operation Failed: {errorContent}");
+                logger.LogError("Failed to get API key. Status Code: {statusCode}, Response: {response}", result.StatusCode, responseContent);
+                throw new ApiUtilityException($"Operation Failed: {responseContent}");
             }
 
             logger.LogInformation("Request made to get ApiKey. Response Status Code: {statusCode}", result.StatusCode);
@@ -71,7 +74,7 @@ namespace LoyaltyApi.Utilities
             string jsonBody = JsonSerializer.Serialize(body);
             StringContent content = new(jsonBody, Encoding.UTF8, "application/json");
             client.DefaultRequestHeaders.Add("XApiKey", apiKey);
-            var result = await client.PostAsync($"http://localhost:5021/api/HISCMD/ADDVOC", content);
+            var result = await client.PostAsync($"{apiOptions.Value.BaseUrl}/api/HISCMD/ADDVOC", content);
             string responseContent = await result.Content.ReadAsStringAsync();
             logger.LogInformation("Request made to generate voucher. Response Message: {message}", responseContent);
 
@@ -186,7 +189,7 @@ namespace LoyaltyApi.Utilities
             StringContent content = new(jsonBody, Encoding.UTF8, "application/json");
 
             // Send the POST request
-            HttpResponseMessage response = await client.PostAsync($"{apiOptions.Value.BaseUrl}/api/CONCMD/ADDCON", content);
+            HttpResponseMessage response = await client.PostAsync($"http://192.168.1.50:5001/api/CONCMD/ADDCON", content);
             string message = await response.Content.ReadAsStringAsync();
 
             if (message.Replace(" ", "").Contains("ERR") || !response.IsSuccessStatusCode)

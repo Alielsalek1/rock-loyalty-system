@@ -19,13 +19,14 @@ namespace LoyaltyApi.Services
 
             var availablePoints = await creditPointsTransactionRepository.GetCustomerPointsAsync(customerId, restaurantId);
             logger.LogTrace("availablePoints: {availablePoints}", availablePoints);
+            
             if (availablePoints < voucherRequest.Points) throw new PointsNotEnoughException("Not enough points");
 
             Restaurant? restaurant = await restaurantRepository.GetRestaurantById(restaurantId) ?? throw new ArgumentException("restaurant not found");
             int voucherValue = voucherUtility.CalculateVoucherValue(voucherRequest.Points, restaurant.CreditPointsSellingRate);
 
             logger.LogTrace("voucherValue: {voucherValue}", voucherValue);
-            if (voucherValue == 0) throw new MinimumPointsNotReachedException("Point used too low");
+            if (voucherValue < restaurant.VoucherMinValue) throw new MinimumPointsNotReachedException("Point used too low");
             
             Voucher voucher = new()
             {

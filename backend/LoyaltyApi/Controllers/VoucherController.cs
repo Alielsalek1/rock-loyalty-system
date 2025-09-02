@@ -130,7 +130,7 @@ public class VoucherController(
         string restaurantClaim = User.FindFirst("restaurantId")?.Value ?? throw new UnauthorizedAccessException();
         _ = int.TryParse(userClaim, out var userId);
         _ = int.TryParse(restaurantClaim, out var restaurantId);
-        
+
         if (userId == 0 || restaurantId == 0)
             throw new UnauthorizedAccessException();
 
@@ -322,9 +322,11 @@ public class VoucherController(
     [Route("admin/vouchers/{shortCode}")]
     [ApiKeyValidator]
     // [Authorize(Roles = "Admin")]
-    public async Task<ActionResult> SetIsUsed([FromRoute] string shortCode)
+    public async Task<ActionResult> SetIsUsed([FromRoute] string shortCode, [FromBody]ValidateVoucherPointsRequestModel requestModel)
     {
         logger.LogInformation("Setting voucher {ShortCode} to used", shortCode);
+        Voucher existingVoucher = await voucherService.GetVoucherAsync(shortCode) ?? throw new NotFoundException("Voucher doesn't exist");
+        if(existingVoucher.Value < requestModel.value) throw new PointsNotEnoughException("Not enough points to validate voucher");
 
         Voucher voucher = await voucherService.SetIsUsedAsync(shortCode);
         return Ok(new
@@ -415,4 +417,5 @@ public class VoucherController(
             metadata
         });
     }
+
 }

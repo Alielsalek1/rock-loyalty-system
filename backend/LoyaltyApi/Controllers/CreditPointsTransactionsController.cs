@@ -200,8 +200,10 @@ public class CreditPointsTransactionController(
 
 
         User? user = await userService.GetUserByIdAsync(transactionRequest.CustomerId, transactionRequest.RestaurantId);
+        Restaurant? restaurant = await restaurantService.GetRestaurantById(transactionRequest.RestaurantId);
 
         if (user == null) return NotFound(new { success = false, message = "User not found" });
+        if (restaurant == null) return NotFound(new { success = false, message = "Restaurant not found" });
 
         await transactionService.AddTransactionAsync(transactionRequest);
 

@@ -19,4 +19,5 @@ public class Restaurant
 
     // Lifetime value in minutes for Vouchers
     public int VoucherLifeTime { get; set; }
+    public double VoucherMinValue { get; set; } = 10;
 }

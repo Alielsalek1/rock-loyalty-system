@@ -23,5 +23,8 @@ public class CreateRestaurantRequestModelValidator : AbstractValidator<CreateRes
 
         RuleFor(x => x.VoucherLifeTime)
             .GreaterThan(0).WithMessage("Voucher Lifetime must be greater than 0.");
+
+        RuleFor(x => x.VoucherMinValue)
+            .GreaterThanOrEqualTo(10).WithMessage("Voucher Minimum Value must be greater than 10.");
     }
 }

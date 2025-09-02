@@ -223,7 +223,7 @@ Any transactions that happen in your Core system must be synchronized with the R
 ### 2. Synchronize Voucher Usage
 Vouchers must be synchronized between both systems:
 - **Before accepting voucher**: Call `GET /api/vouchers/{voucherCode}` to validate
-- **After using voucher**: Call `PUT /api/vouchers/{voucherCode}/use` to mark as used
+- **After using voucher**: Call `PUT api/admin/vouchers/{shortCode)` to mark as used
 - **Both systems must reflect** the voucher status change
 
 ### 3. User Management Integration
@@ -272,9 +272,9 @@ All user management operations (registration, authentication, profile updates) a
                 {
                     var frontendOptions = configuration.GetSection("FrontendOptions").Get<FrontendOptions>() ?? throw new ArgumentException("Frontend options missing");
                     builder.WithOrigins(frontendOptions.BaseUrl)
-                    .AllowAnyHeader()
-                    .AllowCredentials()
-                    .AllowAnyMethod();
+                        .AllowAnyHeader()
+                        .AllowCredentials()
+                        .AllowAnyMethod();
                 });
             });
             // Remove the AddExceptionHandler line - we'll use middleware instead
@@ -313,6 +313,7 @@ All user management operations (registration, authentication, profile updates) a
                 }
             });
             app.UseHttpsRedirection();
+            app.UseHsts();
             app.UseRouting();
             app.UseCors("AllowAngularClient");
             app.UseAuthentication();
@@ -320,15 +321,6 @@ All user management operations (registration, authentication, profile updates) a
             app.MapControllers();
 
             Log.Logger.Information("Configuring web application done");
-        }
-        private static void AddMigrationsAndUpdateDatabase(DbContext dbContext)
-        {
-            Log.Logger.Information("Adding migrations and updating database");
-
-            // Simply apply any pending migrations
-            dbContext.Database.Migrate();
-
-            Log.Logger.Information("Adding migrations and updating database done");
         }
     }
 }

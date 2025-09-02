@@ -48,6 +48,7 @@ namespace LoyaltyApi.Services
             existingRestaurant.CreditPointsSellingRate = restaurantRequestModel.CreditPointsSellingRate ?? existingRestaurant.CreditPointsSellingRate;
             existingRestaurant.VoucherLifeTime = restaurantRequestModel.VoucherLifeTime ?? existingRestaurant.VoucherLifeTime;
             existingRestaurant.CreditPointsLifeTime = restaurantRequestModel.CreditPointsLifeTime ?? existingRestaurant.CreditPointsLifeTime;
+            existingRestaurant.VoucherMinValue = restaurantRequestModel.VoucherMinValue ?? existingRestaurant.VoucherMinValue;
             await repository.UpdateRestaurant(existingRestaurant);
         }
 
@@ -65,7 +66,8 @@ namespace LoyaltyApi.Services
                 CreditPointsBuyingRate = createRestaurant.CreditPointsBuyingRate,
                 CreditPointsSellingRate = createRestaurant.CreditPointsSellingRate,
                 CreditPointsLifeTime = createRestaurant.CreditPointsLifeTime,
-                VoucherLifeTime = createRestaurant.VoucherLifeTime
+                VoucherLifeTime = createRestaurant.VoucherLifeTime,
+                VoucherMinValue = createRestaurant.VoucherMinValue ?? 10
             };
 
             await repository.CreateRestaurant(restaurant);

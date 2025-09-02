@@ -19,13 +19,13 @@ import { VouchersComponent } from './main/vouchers/vouchers.component';
 import { ProfileComponent } from './main/profile/profile.component';
 import { AppComponent } from './app.component';
 
-// admin component
+// admin components (implementation should be in the company system these are just templates)
 import { AdminComponent } from './admin/admin.component';
 import { AdminLoginComponent } from './admin/login/login.component';
 import { RestaurantComponent } from './admin/restaurant/restaurant.component';
 import { GetUserComponent } from './admin/get-user/get-user.component';
 import { MakeVouchersComponent } from './admin/make-vouchers/make-vouchers.component';
-import { flush } from '@angular/core/testing';
+
 
 
 const routes: Routes = [
@@ -37,6 +37,11 @@ const routes: Routes = [
         path: '',
         redirectTo: 'main',
         pathMatch: 'full',
+      },
+      {
+        path: 'test',
+        component: PhoneComponent,
+        // canActivate: [authGuard, notPhoneGuard],
       },
       {
         path: 'auth',

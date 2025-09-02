@@ -58,7 +58,7 @@ export class LoginComponent implements OnInit {
   
     this.googleAuth.login().subscribe({
       next: (response) => {
-        this.toastrService.success('Login Successful: redirecting...');
+        this.toastrService.success('Google Login Successful: redirecting...');
         this.loginGoogle(response.credential);
         this.loading = false;
       },

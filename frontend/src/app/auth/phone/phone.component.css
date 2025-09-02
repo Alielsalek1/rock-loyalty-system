@@ -1,0 +1,18 @@
+#phoneLabel {
+    display: flex;
+    justify-self: center;
+
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+#phoneComponent {
+ width: 100%;
+}
+
+#phoneContainer {
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    width: 80%;
+}

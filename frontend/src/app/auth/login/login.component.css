@@ -8,10 +8,30 @@
   flex: 1;
   border: none;
   height: 1px;
-  background-color: #ddd; /* Light grey line color */
+  background-color: black;
 }
 
 .or-text {
   padding: 0 15px;
-  color: #666; /* Grey text color */
+  color: #666;
+}
+
+/* new edits after sykoo  */
+
+.invalid-feedback {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+@media(max-width: 575px) {
+  .fixer {
+    margin-left: 20px;
+    margin-right: 20px;
+    width: 90%;
+  }
+}
+
+.link {
+  font-size: 0.9rem;
 }

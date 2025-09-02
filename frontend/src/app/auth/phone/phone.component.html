@@ -1,47 +1,33 @@
-<div class="container">
+<div id="phoneContainer">
   <div class="row vh-100 align-items-center">
-    <form
-      ngForm
-      #loginForm="ngForm"
-      class="col-lg-6 col-md-8 col-sm-10 col-12 offset-sm-1 offset-md-2 offset-lg-3"
-      (ngSubmit)="onSubmit()"
-    >
-      <div class="mb-3">
-        <label for="exampleInputEmail1" class="form-label"
-          >enter your phone number :
-        </label>
-        <input
-          type="text"
-          class="form-control"
-          name="phone"
-          id="emailInput"
-          #phoneInput="ngModel"
-          ngModel
-          required
+    <div id="phoneComponent">
+      <form ngForm #loginForm="ngForm" class="col-lg-6 col-md-8 col-sm-10 col-12 offset-sm-1 offset-md-2 offset-lg-3 border-container fixer"
+        (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label for="exampleInputEmail1" class="form-label" id="phoneLabel">Phone Number
+          </label>
+          <input type="text" class="form-control" name="phone" id="emailInput" 
+          #phoneInput="ngModel" ngModel required
           aria-describedby="emailHelpId"
-          placeholder="Enter your phone number"
+          placeholder="Enter your phone number" 
           [pattern]="'^(010|011|012|015)\\d{8}'"
-          maxlength="11"
-          [ngClass]="{
-            'is-invalid': !phoneInput.valid && phoneInput.touched
-          }"
-        />
-        <div
-          *ngIf="phoneInput.invalid && phoneInput.touched"
-          class="invalid-feedback"
-        >
-          @if (phoneInput.errors?.required) {
-          <div>required</div>
-          } @if (phoneInput.errors?.pattern) {
-          <div>enter a valid phone number</div>
-          }
+          maxlength="11" [ngClass]="{
+              'is-invalid': !phoneInput.valid && phoneInput.touched
+          }" />
+          <div *ngIf="phoneInput.invalid && phoneInput.touched" class="invalid-feedback">
+            @if (phoneInput.errors?.required) {
+            <div>required</div>
+            } @if (phoneInput.errors?.pattern) {
+            <div>enter a valid phone number</div>
+            }
+          </div>
         </div>
-      </div>
 
-      <button class="btn btn-primary w-100 mb-1" [disabled]="!loginForm.valid">
-        submit
-      </button>
-    </form>
+        <button class="btn btn-primary w-100 mb-1" [disabled]="!loginForm.valid">
+          submit
+        </button>
+      </form>
+    </div>
   </div>
 </div>
 

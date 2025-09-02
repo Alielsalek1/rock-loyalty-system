@@ -74,7 +74,7 @@ namespace LoyaltyApi.Utilities
             string jsonBody = JsonSerializer.Serialize(body);
             StringContent content = new(jsonBody, Encoding.UTF8, "application/json");
             client.DefaultRequestHeaders.Add("XApiKey", apiKey);
-            var result = await client.PostAsync($"{apiOptions.Value.BaseUrl}/api/HISCMD/ADDVOC", content);
+            var result = await client.PostAsync($"http://192.168.1.50:5001/api/HISCMD/ADDVOC", content);
             string responseContent = await result.Content.ReadAsStringAsync();
             logger.LogInformation("Request made to generate voucher. Response Message: {message}", responseContent);
 
@@ -82,6 +82,7 @@ namespace LoyaltyApi.Utilities
                 throw new ApiUtilityException($"Request to create voucher failed with message: {responseContent}");
 
             var responseObject = JsonSerializer.Deserialize<List<String>>(responseContent) ?? throw new HttpRequestException("Request to create voucher failed");
+            
             return responseObject.First();
         }
         public async Task<User?> GetUserAsync(User user, string apiKey)

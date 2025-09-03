@@ -19,7 +19,6 @@ export class VouchersService {
       })
       .pipe(
         tap((response) => {
-          console.log(response);
           this.vouchers.next(response.data.vouchers);
         })
       );

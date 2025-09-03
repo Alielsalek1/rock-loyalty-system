@@ -40,7 +40,7 @@ const routes: Routes = [
       },
       {
         path: 'test',
-        component: PhoneComponent,
+        component: ExchangePointsComponent,
         // canActivate: [authGuard, notPhoneGuard],
       },
       {
@@ -94,6 +94,7 @@ const routes: Routes = [
           {
             path: '',
             component: ExchangePointsComponent,
+            canActivate: [authGuard, phoneGuardGuard],
           },
           {
             path: 'points',

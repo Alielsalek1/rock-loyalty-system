@@ -196,24 +196,6 @@ export class AuthService {
       );
   }
 
-  loginFaceBook(token: string): Observable<UserInterface> {
-    return this.http
-      .post<UserInterface>(`${environment.apiUrl}/api/oauth2/signin-facebook`, {
-        accessToken: token,
-        restaurantId: this.restaurantId,
-      })
-      .pipe(
-        tap((userInfo) => {
-          const email = userInfo.data.user.email;
-          const name = userInfo.data.user.name;
-          const id = userInfo.data.user.id;
-          const token = userInfo.data.accessToken;
-          const phonenumber = userInfo.data.user.phoneNumber;
-          this.authenticationHandler(email, name, phonenumber, id, token);
-        })
-      );
-  }
-
   forgotPassword(email: string): Observable<any> {
     return this.http
       .post(`${environment.apiUrl}/api/password/forgot-password-email`, {

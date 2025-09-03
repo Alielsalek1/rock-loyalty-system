@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../env';
-import { BehaviorSubject, tap } from 'rxjs';
+import { BehaviorSubject, switchMap, map, tap} from 'rxjs';
 import { Injectable } from '@angular/core';
 
 @Injectable({
@@ -38,8 +38,10 @@ export class ExchangePointsService {
     return this.http
       .post(`${environment.apiUrl}/api/vouchers`, { Points: points })
       .pipe(
-        tap(() => {
-          this.getPoints().subscribe();
+        switchMap((voucherResponse) => {
+          return this.getPoints().pipe(
+            map(() => voucherResponse)
+          );
         })
       );
   }

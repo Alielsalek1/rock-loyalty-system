@@ -17,8 +17,8 @@ export class VouchersComponent implements OnInit, OnDestroy {
   loading: boolean = false;
   loadingMessage: string = '';
 
-  totalItems = 10;
-  itemsPerPage = 10;
+  totalItems = 9;
+  itemsPerPage = 9;
   vouchersSub: Subscription;
 
   constructor(

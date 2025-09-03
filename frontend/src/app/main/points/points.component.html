@@ -24,23 +24,33 @@
                   <strong>Transaction Value:</strong>
                   {{ point.transactionValue }} L.E
                 </p>
-              @if (point.points >= 0) {
+                @if (point.points >= 0) {
                 <p class="card-text">
                   <strong>Status:</strong>
-                  <span
-                    id="status"
-                    [ngClass]="{
+                  <span id="status" [ngClass]="{
                       'text-danger fw-bold': point.isExpired,
                       'text-success': !point.isExpired
-                    }"
-                  >
+                    }">
                     {{ point.isExpired ? "Expired" : "Valid" }}
                   </span>
                 </p>
                 <p class="card-text" id="points">
                   <strong>Points:</strong> {{ point.points }}
                 </p>
-              }
+                } @else if (point.points < 0) {
+                <p class="card-text">
+                  <strong>Status:</strong>
+                  <span id="status" [ngClass]="{
+                      'text-danger fw-bold': point.isExpired,
+                      'text-success': !point.isExpired
+                    }">
+                    {{ point.isExpired ? "Consumed" : "Available" }}
+                  </span>
+                </p>
+                <p class="card-text" id="points">
+                  <strong>Points exchanged:</strong> {{ -point.points }}
+                </p>
+                }
               </div>
               <div class="card-footer text-muted">
                 {{ point.transactionDate | date }}
@@ -49,27 +59,15 @@
           </div>
         </div>
         } @else {
-        <div
-          class="d-flex justify-content-between align-items-center"
-          style="height: calc(100vh - 71px)"
-        >
+        <div class="d-flex justify-content-between align-items-center" style="height: calc(100vh - 71px)">
           <div class="no-vouchers">
             <p>No points to show</p>
           </div>
         </div>
-        } @if ( totalItems > 10 ) {
-        <pagination
-          [totalItems]="totalItems"
-          [maxSize]="5"
-          [boundaryLinks]="true"
-          [itemsPerPage]="itemsPerPage"
-          previousText="&lsaquo;"
-          nextText="&rsaquo;"
-          firstText="&laquo;"
-          lastText="&raquo;"
-          class="paginator"
-          (pageChanged)="pageChanged($event)"
-        ></pagination>
+        } @if ( totalItems > 9 ) {
+        <pagination [totalItems]="totalItems" [maxSize]="5" [boundaryLinks]="true" [itemsPerPage]="itemsPerPage"
+          previousText="&lsaquo;" nextText="&rsaquo;" firstText="&laquo;" lastText="&raquo;" class="paginator"
+          (pageChanged)="pageChanged($event)"></pagination>
         }
       </div>
     </div>

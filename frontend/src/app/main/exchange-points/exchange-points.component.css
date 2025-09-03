@@ -15,8 +15,18 @@ td {
   min-height: calc(100vh - 71px);
 }
 
+p {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  min-height: 1.2rem; 
+  margin-bottom: 0;
+  text-align: center ;
+}
+
 @media screen and (min-width: 768px) {
   .main-page {
     min-height: 100vh;
   }
 }
+

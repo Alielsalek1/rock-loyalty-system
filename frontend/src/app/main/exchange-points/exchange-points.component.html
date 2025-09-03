@@ -6,7 +6,7 @@
   <div class="row mx-2 flex-column gap-4 main-page align-items-center justify-content-center">
     <div class="col-lg-5 col-md-6 col-12 partition-shadow rounded-4 p-4">
       <h2 class="text-center d-flex justify-content-between align-items-center">
-        <div class=""><i class="bi bi-currency-exchange"></i> Balance</div>
+        <div class=""><i class="bi bi-currency-exchange"></i>Balance</div>
         {{ points }}
       </h2>
       <hr />
@@ -18,19 +18,34 @@
         <div class="col-12">
           <div class="d-flex align-items-center gap-3">
             <div class="w-100">
-              <label for="form-label">points</label>
-              <input type="number" class="form-control" name="from" id="" aria-describedby="helpId" placeholder="0"
-                [(ngModel)]="from" (input)="fromTyping()" />
+              <label for="form-label">Points</label>
+              <input type="number"
+              step="1" 
+              min="0"
+              pattern="[0-9]*" 
+              class="form-control" 
+              name="from" 
+              placeholder="Enter Value"
+              [(ngModel)]="from" 
+              (input)="fromTyping()" />
             </div>
 
             <i class="bi bi-arrow-left-right mt-4"></i>
 
             <div class="w-100">
-              <label for="form-label">egp</label>
-              <input type="number" class="form-control" name="to" id="" [(ngModel)]="to" aria-describedby="helpId"
-                placeholder="0" (input)="toTyping()" />
+              <label for="form-label">EGP</label>
+              <input type="number" 
+              step="1" 
+              min="0"
+              pattern="[0-9]*" 
+              class="form-control" 
+              name="to" 
+              placeholder="Enter Value"
+              [(ngModel)]="to" 
+              (input)="toTyping()" />
             </div>
           </div>
+          <p>{{ errorMessage }}</p>
         </div>
       </div>
       <div class="row mb-3 pt-2">
@@ -41,19 +56,19 @@
           <table class="table">
             <tbody>
               <tr>
-                <td>50 points</td>
+                <td>{{10 / exchangeRate}} points</td>
                 <td class="icon-cell"><i class="bi bi-arrows"></i></td>
-                <td>{{ exchangeRate * 50 }} L.E</td>
+                <td>{{minimumExchangeAmount}} L.E</td>
               </tr>
               <tr>
-                <td>100 points</td>
+                <td>{{20 / exchangeRate}} points</td>
                 <td class="icon-cell"><i class="bi bi-arrows"></i></td>
-                <td>{{ exchangeRate * 100 }} L.E</td>
+                <td>{{ minimumExchangeAmount * 2}} L.E</td>
               </tr>
               <tr>
-                <td>200 points</td>
+                <td>{{40 / exchangeRate}} points</td>
                 <td class="icon-cell"><i class="bi bi-arrows"></i></td>
-                <td>{{ exchangeRate * 200 }} L.E</td>
+                <td>{{ minimumExchangeAmount * 4}} L.E</td>
               </tr>
             </tbody>
           </table>

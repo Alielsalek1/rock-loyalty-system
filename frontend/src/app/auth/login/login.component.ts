@@ -4,7 +4,6 @@ import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 import { finalize, Observable } from 'rxjs';
 import { UserInterface } from '../../shared/responseInterface/user.get.response.interface';
-import { FacebookAuthService } from '../social-login/facebook-auth.service';
 import { GoogleAuthService } from '../social-login/google-auth.service';
 import { ToastrService } from 'ngx-toastr';
 
@@ -23,12 +22,11 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private facebookAuth: FacebookAuthService,
     private googleAuth: GoogleAuthService,
     private router: Router,
     private toastrService: ToastrService,
+  ) {}
 
-  ) { }
   onSubmit() {
     const phoneEmailField: string = this.form.value.phone;
     const password: string = this.form.value.password;
@@ -38,11 +36,15 @@ export class LoginComponent implements OnInit {
     } else {
       loginObs = this.authService.logIn(phoneEmailField, null, password);
     }
+    this.loading = true;
+    this.loadingMessage = 'Logging in...';
     loginObs.pipe(finalize(() => { })).subscribe({
       next: (response) => {
+        this.loading = false;
         this.redirect();
       },
       error: (error) => {
+        this.loading = false;
         this.toastrService.error(error.message);
       },
     });
@@ -60,7 +62,6 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         this.toastrService.success('Google Login Successful: redirecting...');
         this.loginGoogle(response.credential);
-        this.loading = false;
       },
       error: (error) => {
         this.toastrService.error('Google login failed');
@@ -68,37 +69,6 @@ export class LoginComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
-  
-  onFacebokLogin() {
-    this.loading = true;
-    this.loadingMessage = 'waiting for facebook signin';
-    this.facebookAuth
-      .login()
-      .then((response: any) => {
-        const token = response.authResponse.accessToken;
-        this.loginFacebook(token);
-      })
-      .catch((error) => {
-        this.toastrService.error('login with facebook failed');
-        this.loading = false;
-      });
-  }
-
-  private loginFacebook(token: string) {
-    this.loadingMessage = 'signing in';
-    this.authService
-      .loginFaceBook(token)
-      .pipe()
-      .subscribe({
-        next: () => {
-          this.redirect();
-        },
-        error: (error: Error) => {
-          this.toastrService.error(error.message);
-          this.loading = false;
-        },
-      });
   }
 
   private loginGoogle(token: string) {

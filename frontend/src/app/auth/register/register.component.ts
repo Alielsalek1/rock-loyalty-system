@@ -4,7 +4,6 @@ import { AuthService } from '../auth.service';
 import { finalize } from 'rxjs';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { FacebookAuthService } from '../social-login/facebook-auth.service';
 import { GoogleAuthService } from '../social-login/google-auth.service';
 
 @Component({
@@ -21,7 +20,6 @@ export class RegisterComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private toastrService: ToastrService,
-    private facebookAuth: FacebookAuthService,
     private googleAuth: GoogleAuthService,
     private router: Router
   ) {}
@@ -59,7 +57,6 @@ export class RegisterComponent implements OnInit {
       next: (response) => {
         this.toastrService.success('Login Successful: redirecting...');
         this.loginGoogle(response.credential);
-        this.loading = false;
       },
       error: (error) => {
         this.toastrService.error('Google login failed');
@@ -67,37 +64,6 @@ export class RegisterComponent implements OnInit {
         this.loading = false;
       }
     });
-  }
-
-  onFacebokLogin() {
-    this.loading = true;
-    this.loadingMessage = 'waiting for facebook signin';
-    this.facebookAuth
-      .login()
-      .then((response: any) => {
-        const token = response.authResponse.accessToken;
-        this.loginFacebook(token);
-      })
-      .catch((error) => {
-        this.toastrService.error('login with facebook failed');
-        this.loading = false;
-      });
-  }
-
-  private loginFacebook(token: string) {
-    this.loadingMessage = 'signing in';
-    this.authService
-      .loginFaceBook(token)
-      .pipe()
-      .subscribe({
-        next: () => {
-          this.redirect();
-        },
-        error: (error) => {
-          this.toastrService.error(error.error.message);
-          this.loading = false;
-        },
-      });
   }
 
   private loginGoogle(token: string) {

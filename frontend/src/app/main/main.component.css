@@ -1,6 +1,10 @@
 .overlay {
   padding-left: 64px;
   padding-bottom: 0px;
+
+  background: rgba(135, 206, 235, 0.15);
+  min-height: 100vh;
+
 }
 
 @media screen and (max-width: 768px) {

@@ -31,3 +31,19 @@
     width: 90%;
   }
 }
+
+/* google stuff */
+
+.input-group-text {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+}
+
+.input-group-text .material-icons {
+  color: #6c757d;
+  font-size: 20px;
+}
+
+.invalid-feedback .material-icons {
+  margin-right: 4px;
+}

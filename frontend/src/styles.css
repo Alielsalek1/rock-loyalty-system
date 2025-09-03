@@ -25,9 +25,11 @@ button {
 .animated-background {
     height: 100vh;
     width: 100%;
-    background: rgba(8, 44, 58, 0.25);
-    background-size: 300% 300%;
-    /* animation: smoothWave 2s ease-in-out infinite; */
+    background: -webkit-radial-gradient(circle, rgba(255, 255, 255, 0.2), rgba(0, 183, 255, 0.25), rgba(158, 0, 198, 0.4)),
+        url('../public/border background.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    z-index: -1;
 }
 
 @keyframes smoothWave {
@@ -52,17 +54,25 @@ button {
 
 /* Global default container */
 .border-container {
-    background: rgba(8, 44, 58, 0.1);
-    padding: 50px !important;
+    background: rgba(28, 153, 202, 0.1);
+    padding: 30px !important;
 
     box-shadow:
-        -5px -5px 0px 5px rgba(255, 255, 255, 0.4),
-        0px 0px 0px 10px rgba(31, 81, 133, 0.2);
+        -5px -5px 5px 5px rgba(167, 229, 245, 0.4),
+        0px 0px 5px 10px rgba(31, 81, 133, 0.2);
+
+    z-index: 1;
+    border-radius: 20px;
 }
 
 @media(max-width: 500px) {
     .border-container {
         padding-right: 20px !important;
         padding-left: 20px !important;
+    }
+
+    .animated-background {
+        background-size: 200% 100%;
+        background-position: center;
     }
 }

@@ -16,3 +16,11 @@
     justify-self: center;
     width: 80%;
 }
+
+@media(max-width: 575px) {
+  .fixer {
+    margin-left: 20px;
+    margin-right: 20px;
+    width: 90%;
+  }
+}

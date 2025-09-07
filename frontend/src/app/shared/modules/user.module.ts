@@ -26,20 +26,14 @@ export class User {
 
   updateToken(token: string) {
     try {
+      
+      this._token = token;
 
-      if (!this._tokenDurationMs && !this._tokenExpirationDate) {
-        this._token = token;
+      const decodedToken: any = jwtDecode(token);
+      this._tokenExpirationDate = new Date(decodedToken.exp * 1000);
 
-        const decodedToken: any = jwtDecode(token);
-        this._tokenExpirationDate = new Date(decodedToken.exp * 1000); 
-
-        const issuedAt = decodedToken.iat ? decodedToken.iat * 1000 : new Date().getTime();
-        this._tokenDurationMs = (decodedToken.exp * 1000) - issuedAt;
-        
-      } else if (this._tokenDurationMs) {
-        this._token = token;
-        this._tokenExpirationDate = new Date(new Date().getTime() + this._tokenDurationMs);
-      }
+      const issuedAt = new Date().getTime();
+      this._tokenDurationMs = (decodedToken.exp * 1000) - issuedAt;
 
     } catch (error) {
       this._token = null;

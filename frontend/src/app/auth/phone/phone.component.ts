@@ -18,15 +18,24 @@ export class PhoneComponent {
     private router: Router,
     private toastrService: ToastrService
   ) { }
-  loading: boolean = false;
 
-  onSubmit() {
+  loading: boolean = false;
+  loadingMessage: string = '';
+
+  async onSubmit() {
+    this.loading = true;
+    this.loadingMessage = 'Adding phone number';
+
     const phone: string = this.form.value.phone;
     const user: User = this.authService.currentUser;
-    console.log('Current user before update:', user);
-    console.log('Phone to be set:', phone);
+
+    if(user === null) {
+      this.toastrService.error('No user is currently logged in.');
+      this.loading = false;
+      return;
+    }
+
     user.phonenumber = phone;
-    this.loading = true;
     this.authService
       .updateUserInfo(user)
       .pipe(

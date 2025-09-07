@@ -24,6 +24,10 @@ p {
   text-align: center ;
 }
 
+.exchange-card {
+  background: whitesmoke;
+}
+
 @media screen and (min-width: 768px) {
   .main-page {
     min-height: 100vh;

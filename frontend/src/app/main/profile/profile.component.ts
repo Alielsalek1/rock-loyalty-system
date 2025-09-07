@@ -20,6 +20,7 @@ export class ProfileComponent implements OnInit {
   name: string;
   email: string;
   phoneNumber: string;
+  id: number;
   constructor(private authService: AuthService, private toastrService: ToastrService) { }
 
   ngOnInit() {
@@ -27,6 +28,7 @@ export class ProfileComponent implements OnInit {
     this.name = user.name;
     this.email = user.email;
     this.phoneNumber = user.phonenumber;
+    this.id = user.id;
   }
 
   onSubmit() {

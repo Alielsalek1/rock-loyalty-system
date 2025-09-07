@@ -70,6 +70,8 @@ export class AuthService {
     this.currentUser = null;
 
     localStorage.removeItem('userInfo' + this.restaurantId);
+    this.clearSpecificCookies(['refreshToken']);
+
     this.router.navigate([this.restaurantId, 'auth', 'login']);
   }
 
@@ -305,8 +307,9 @@ export class AuthService {
       const expiryTime = this.currentUser.expirationDate.getTime();
       const timeUntilExpiry = expiryTime - new Date().getTime();
 
-      console.log(`Access Token expires at: ${this.currentUser.expirationDate}`);
-      console.log(`Time until expiry: ${Math.floor(timeUntilExpiry / 60000)} minutes`);
+      console.log(`Access Token expires at: ${this.currentUser.expirationDate.toTimeString()}`);
+      console.log(`Time until expiry: ${Math.floor(timeUntilExpiry / 60000)} minutes` +
+        ` and ${Math.floor((timeUntilExpiry % 60000) / 1000)} seconds`);
 
       if (this.tokenTimeoutId) {
         clearTimeout(this.tokenTimeoutId);
@@ -369,7 +372,7 @@ export class AuthService {
 
     return this.http.put(
       `${environment.apiUrl}/api/tokens/refresh-tokens`,
-      {}, 
+      {},
       {
         withCredentials: true,
         headers: {
@@ -425,18 +428,18 @@ export class AuthService {
     this.LogOut();
   }
 
-  // helper gets rfresh token
+  // helper gets refresh token
   private getRefreshTokenFromCookie(): string | null {
     try {
       const cookies = document.cookie.split(';');
-      const refreshTokenCookie = cookies.find(cookie => 
+      const refreshTokenCookie = cookies.find(cookie =>
         cookie.trim().startsWith('refreshToken=')
       );
-      
+
       if (refreshTokenCookie) {
         return refreshTokenCookie.split('=')[1].trim();
       }
-      
+
       return null;
     } catch (error) {
       console.error('Error reading refresh token from cookie:', error);
@@ -444,4 +447,20 @@ export class AuthService {
     }
   }
 
+  // helper clears specific cookie names
+  private clearSpecificCookies(cookieNames: string[]): void {
+    cookieNames.forEach(name => {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${window.location.hostname}`;
+
+      // Clear for parent domain if subdomain
+      const hostParts = window.location.hostname.split('.');
+      if (hostParts.length > 2) {
+        const parentDomain = '.' + hostParts.slice(-2).join('.');
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${parentDomain}`;
+      }
+    });
+  }
+
 }
+

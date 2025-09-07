@@ -40,7 +40,7 @@ const routes: Routes = [
       },
       {
         path: 'test',
-        component: ExchangePointsComponent,
+        component: ForgetPasswordRequestComponent,
         // canActivate: [authGuard, notPhoneGuard],
       },
       {

@@ -74,6 +74,7 @@ export class VouchersComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.vouchersSub.unsubscribe();
   }
+  
   private resetPage() {
     this.vouchersService.getVouchers(1, this.itemsPerPage).subscribe({
       next: () => {},

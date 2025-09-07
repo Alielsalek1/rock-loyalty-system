@@ -1,50 +1,59 @@
 <div class="container">
-  <div
-    class="row mx-2 flex-column gap-4 main-page align-items-center justify-content-center"
-  >
-    <div class="col-lg-5 col-md-6 col-12 partition-shadow rounded-4 p-4">
-      <form ngForm #myForm="ngForm" (ngSubmit)="onSubmit()">
-        <h4 class="text-center">
-          <span style="font-weight: 300">Update</span> Info
-        </h4>
-        <div class="mb-3">
-          <label for="" class="form-label">Name</label>
-          <input
-            type="text"
-            class="form-control"
-            name="name"
-            id=""
-            aria-describedby="helpId"
-            placeholder="jhone doe"
-            [(ngModel)]="name"
-          />
+  <div class="row mx-2 flex-column gap-4 main-page align-items-center justify-content-center">
+    <div class="col-lg-5 col-md-6 col-12 partition-shadow rounded-4 p-4 profile-card">
+
+      <h4 class="text-center">
+        <span style="font-weight: 300">User</span> Profile
+      </h4>
+      <hr />
+
+      <div class="user-info-grid">
+        <div class="info-row">
+          <div class="icon-container">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <div class="info-box">
+            <label class="info-label">Name</label>
+            <div class="info-value">{{ name }}</div>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="" class="form-label">Email</label>
-          <input
-            type="email"
-            class="form-control"
-            name="email"
-            id=""
-            aria-describedby="emailHelpId"
-            placeholder="abc@mail.com"
-            [(ngModel)]="email"
-          />
+
+        <div class="info-row">
+          <div class="icon-container">
+            <i class="bi bi-envelope-fill"></i>
+          </div>
+          <div class="info-box">
+            <label class="info-label">Email</label>
+            <div class="info-value">{{ email }}</div>
+          </div>
         </div>
-        <div class="mb-3">
-          <label for="" class="form-label">Phone number</label>
-          <input
-            type="text"
-            class="form-control"
-            name="phoneNumber"
-            id=""
-            aria-describedby="emailHelpId"
-            placeholder="Phone number"
-            [(ngModel)]="phoneNumber"
-          />
+
+        <div class="info-row">
+          <div class="icon-container">
+            <i class="bi bi-telephone-fill"></i>
+          </div>
+          <div class="info-box">
+            <label class="info-label">Phone Number</label>
+            <div class="info-value">{{ phoneNumber }}</div>
+          </div>
         </div>
-        <button class="btn-primary btn w-100 mb-1">Submit</button>
-      </form>
+
+        <div class="info-row">
+          <div class="icon-container">
+            <i class="bi bi-person-badge"></i>
+          </div>
+          <div class="info-box">
+            <label class="info-label">User ID</label>
+            <div class="info-value">{{ id }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-info mt-4" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        <span>To update your information you need to contact an administrator</span>
+      </div>
+
       <hr />
       <button class="btn btn-danger w-100" (click)="onLogOut()">Log Out</button>
     </div>

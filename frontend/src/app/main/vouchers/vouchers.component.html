@@ -8,7 +8,7 @@
       <div class="voucher-page">
         @if ( vouchers?.length > 0 ) {
         <div class="row row-cols-1 row-cols-md-3 g-4 w-100 py-4">
-          <div *ngFor="let voucher of vouchers; let i = index" class="col">
+          <div *ngFor="let voucher of filteredVouchers; let i = index" class="col">
             <article
               class="gift-card"
               [ngClass]="{ 'gift-card--claimed': voucher.isUsed }"

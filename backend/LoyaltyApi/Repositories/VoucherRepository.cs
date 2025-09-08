@@ -43,9 +43,9 @@ namespace LoyaltyApi.Repositories
         {
             logger.LogInformation("Getting vouchers for customer {CustomerId} and restaurant {RestaurantId}",
                 customerId, restaurantId);
-                
+
             var query = dbContext.Vouchers
-                .Where(v => v.CustomerId == customerId && v.RestaurantId == restaurantId)
+                .Where(v => v.CustomerId == customerId && v.RestaurantId == restaurantId && !v.IsUsed)
                 .OrderByDescending(v => v.DateOfCreation)
                 .AsQueryable();
             var totalCount = await query.CountAsync();

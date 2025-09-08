@@ -12,9 +12,7 @@ import { finalize, Subscription } from 'rxjs';
 })
 export class VouchersComponent implements OnInit, OnDestroy {
   @ViewChild('errorInput') errorInput: NgModel;
-
   vouchers: Voucher[] = [];
-  filteredVouchers: Voucher[] = [];
 
   loading: boolean = false;
   loadingMessage: string = '';
@@ -51,11 +49,7 @@ export class VouchersComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.vouchersSub = this.vouchersService.vouchers.subscribe(
       (vouchers: Voucher[]) => {
-        this.vouchers = vouchers || [];
-       
-        if(this.vouchers.length > 0) {
-          this.filteredVouchers = this.vouchers.filter((voucher) => !voucher.isUsed);
-        }
+        this.vouchers = vouchers;
       }
     );
     this.loading = true;

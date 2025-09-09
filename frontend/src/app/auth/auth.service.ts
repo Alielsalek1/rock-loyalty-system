@@ -228,7 +228,7 @@ export class AuthService {
       .post<UserInterface>(`${environment.apiUrl}/api/oauth2/signin-google`, {
         accessToken: token,
         restaurantId: this.restaurantId,
-      })
+      }, { withCredentials: true }) 
       .pipe(
         tap((userInfo) => {
           const email = userInfo.data.user.email;

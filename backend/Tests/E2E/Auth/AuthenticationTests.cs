@@ -127,20 +127,19 @@ public class AuthenticationTests : BaseTest
         Assert.That(logoutResponse.Status, Is.EqualTo(200), "Logout should succeed");
     }
 
-    // [Test]
-    // public async Task PasswordReset_ValidEmail_ShouldSucceed()
-    // {
-    //     // Arrange
-    //     testUserEmail = TestHelper.GenerateRandomEmail();
-    //     var registerData = TestHelper.CreateTestUser();
-    //     await MakeApiRequest("POST", "/api/auth/register", TestHelper.SerializeTestUser(registerData));
+    [Test]
+    public async Task ConfirmEmail_ValidToken_ShouldFail()
+    {
+        // Arrange
+        var registerData = TestHelper.CreateTestUser();
+        await MakeApiRequest("POST", "/api/users", TestHelper.SerializeTestUser(registerData));
 
-    //     var resetData = JsonSerializer.Serialize(new { Email = testUserEmail });
+        
+        var loginBody = TestHelper.CreateLoginRequest(registerData.Email, registerData.Password, registerData.PhoneNumber , RestaurantId);
+        // Act
+        var response = await MakeApiRequest("POST", "/api/auth/login", loginBody);
 
-    //     // Act
-    //     var response = await MakeApiRequest("POST", "/api/auth/forgot-password", resetData);
-
-    //     // Assert
-    //     Assert.That(response.Status, Is.EqualTo(200), "Password reset request should succeed");
-    // }
+        // Assert
+        Assert.That(response.Status, Is.EqualTo(409), "Email confirmation should fail with invalid token");
+    }
 }

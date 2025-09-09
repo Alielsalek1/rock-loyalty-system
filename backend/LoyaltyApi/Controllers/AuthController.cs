@@ -113,10 +113,10 @@ public class AuthController(
         // Clear any existing refresh token cookie first
         HttpContext.Response.Cookies.Delete("refreshToken");
 
-        // Generate new refresh token (no database storage)
+        // // Generate new refresh token (no database storage)
         string refreshToken = tokenService.GenerateRefreshToken(user.Id, loginBody.RestaurantId, Role.User);
 
-        // Set secure cookie with refresh token
+        // // Set secure cookie with refresh token
         HttpContext.Response.Cookies.Append("refreshToken", refreshToken, jwtOptions.Value.JwtCookieOptions);
 
         return Ok(new

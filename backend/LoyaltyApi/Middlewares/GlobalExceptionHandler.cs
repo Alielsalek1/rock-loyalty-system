@@ -91,7 +91,7 @@ public class GlobalExceptionHandler
         else if(exception is VoucherExpiredException)
         {
             errorResponse = new { success = false, message = exception.Message };
-            statusCode = StatusCodes.Status410Gone;
+            statusCode = StatusCodes.Status409Conflict;
         }
         else
         {

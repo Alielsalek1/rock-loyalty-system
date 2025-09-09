@@ -10,14 +10,14 @@ namespace LoyaltyApi.Services
     public class VoucherService(IVoucherRepository voucherRepository,
     VoucherUtility voucherUtility,
     IRestaurantRepository restaurantRepository,
-    ICreditPointsTransactionRepository creditPointsTransactionRepository,
+    ICreditPointsTransactionService creditPointsTransactionService,
     ILogger<VoucherService> logger) : IVoucherService
     {
         public async Task<Voucher> CreateVoucherAsync(CreateVoucherRequest voucherRequest, int customerId, int restaurantId)
         {
             logger.LogTrace("Creating voucher for customer {customerId} and restaurant {restaurantId}", customerId, restaurantId);
 
-            var availablePoints = await creditPointsTransactionRepository.GetCustomerPointsAsync(customerId, restaurantId);
+            var availablePoints = await creditPointsTransactionService.GetCustomerPointsAsync(customerId, restaurantId);
             logger.LogTrace("availablePoints: {availablePoints}", availablePoints);
             
             if (availablePoints < voucherRequest.Points) throw new PointsNotEnoughException("Not enough points");

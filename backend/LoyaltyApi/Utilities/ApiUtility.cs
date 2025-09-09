@@ -74,7 +74,7 @@ namespace LoyaltyApi.Utilities
             string jsonBody = JsonSerializer.Serialize(body);
             StringContent content = new(jsonBody, Encoding.UTF8, "application/json");
             client.DefaultRequestHeaders.Add("XApiKey", apiKey);
-            var result = await client.PostAsync($"http://192.168.1.50:5001/api/HISCMD/ADDVOC", content);
+            var result = await client.PostAsync($"http://localhost:5021/api/HISCMD/ADDVOC", content);
             string responseContent = await result.Content.ReadAsStringAsync();
             logger.LogInformation("Request made to generate voucher. Response Message: {message}", responseContent);
 
